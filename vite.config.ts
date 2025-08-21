@@ -14,6 +14,15 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    server: {
+        https: {
+            key: './localhost+2-key.pem',
+            cert: './localhost+2.pem',
+        },
+        host: true,
+        port: 5173,
+        strictPort: true,
+    },
     esbuild: {
         jsx: 'automatic',
     },
