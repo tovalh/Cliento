@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\PropuestaController;
 use App\Http\Controllers\ProyectoController;
@@ -10,8 +11,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::render('landing');
 })->name('home');
+
+// Lead capture route (public)
+Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -313,6 +313,7 @@ export default function Index({ seguimientos, filtros }: Props) {
                             </CardContent>
                         </Card>
 
+
                         <Card className="bg-card border shadow-sm hover:shadow-md transition-all">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
@@ -451,7 +452,7 @@ export default function Index({ seguimientos, filtros }: Props) {
 
                     {/* Main Content */}
                     <Card className="bg-card border shadow-lg overflow-hidden">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200">
+                        <CardHeader className="bg-gray-50 border-b border-gray-200 py-6">
                             <div className="grid grid-cols-12 gap-4 items-center text-sm font-semibold text-gray-600">
                                 <div className="col-span-3">
                                     <SortButton campo="titulo">SEGUIMIENTO</SortButton>
@@ -495,7 +496,7 @@ export default function Index({ seguimientos, filtros }: Props) {
                                         return (
                                             <div
                                                 key={seguimiento.id}
-                                                className={`p-6 border-l-2 hover:bg-gray-50 transition-all duration-200 ${getStatusColor(seguimiento)}`}
+                                                className={`p-2 border-l-2 hover:bg-gray-50 transition-all duration-200 ${getStatusColor(seguimiento)}`}
                                             >
                                                 <div className="grid grid-cols-12 gap-4 items-center">
                                                     <div className="col-span-3">
