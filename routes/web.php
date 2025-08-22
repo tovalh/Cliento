@@ -14,8 +14,9 @@ Route::get('/', function () {
     return Inertia::render('landing');
 })->name('home');
 
-// Lead capture route (public)
+// Lead capture routes (public)
 Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
+Route::get('/leads/count', [LeadController::class, 'count'])->name('leads.count');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

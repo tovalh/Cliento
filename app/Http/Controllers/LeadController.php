@@ -11,12 +11,14 @@ class LeadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:leads,email',
             'source' => 'string|max:255'
         ]);
 
         try {
             $lead = Lead::create([
+                'name' => $request->name,
                 'email' => $request->email,
                 'source' => $request->source ?? 'landing_page'
             ]);
@@ -33,5 +35,11 @@ class LeadController extends Controller
                 'message' => 'Hubo un error al guardar tu información. Inténtalo de nuevo.'
             ], 500);
         }
+    }
+
+    public function count()
+    {
+        $count = Lead::count();
+        return response()->json(['count' => $count]);
     }
 }

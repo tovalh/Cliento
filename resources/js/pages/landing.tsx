@@ -8,17 +8,16 @@ import {
     Clock,
     CheckCircle,
     Heart,
-    Star,
     Check,
     ChevronDown,
     Mail,
     Phone,
-    MapPin,
-    Monitor,
-    Smartphone,
-    ArrowRight
+    ArrowRight,
+    Frown,
+    AlertTriangle,
+    X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Landing() {
     const { auth } = usePage<SharedData>().props;
@@ -26,7 +25,24 @@ export default function Landing() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    const [registeredCount] = useState(247); // Simulado - en producción vendría del backend
+    const [name, setName] = useState('');
+    const [registeredCount, setRegisteredCount] = useState(0);
+
+    // Cargar contador real al inicializar
+    useEffect(() => {
+        const fetchLeadsCount = async () => {
+            try {
+                const response = await fetch('/leads/count');
+                const data = await response.json();
+                setRegisteredCount(data.count);
+            } catch {
+                // Si falla, mantener en 0
+                setRegisteredCount(0);
+            }
+        };
+
+        void fetchLeadsCount();
+    }, []);
 
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,6 +57,7 @@ export default function Landing() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
+                    name,
                     email,
                     source: 'landing_hero'
                 }),
@@ -49,8 +66,11 @@ export default function Landing() {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({ type: 'success', text: '¡Listo! Eres parte de la lista prioritaria. Te avisaremos cuando estemos listos.' });
+                setMessage({ type: 'success', text: `¡Listo ${name}! Eres parte de la lista prioritaria. Te avisaremos cuando estemos listos.` });
+                setName('');
                 setEmail('');
+                // Actualizar contador
+                setRegisteredCount(prev => prev + 1);
             } else {
                 setMessage({ type: 'error', text: data.message });
             }
@@ -63,17 +83,17 @@ export default function Landing() {
 
     const painPoints = [
         {
-            icon: "😩",
+            icon: AlertTriangle,
             title: "Post-its por todos lados",
             description: "Tienes contactos en WhatsApp, Instagram, email... ¿Cómo haces seguimiento?"
         },
         {
-            icon: "😰",
+            icon: Frown,
             title: "\"Se me olvidó contactarlo\"",
             description: "Ese cliente que parecía interesado... ¿Cuándo fue la última vez que le escribiste?"
         },
         {
-            icon: "😤",
+            icon: X,
             title: "Perdiste la venta por desorganizado",
             description: "No por falta de talento o precio. Solo porque no hiciste seguimiento."
         }
@@ -105,20 +125,20 @@ export default function Landing() {
         "Beta privada desde septiembre"
     ];
 
-    const expectations = [
-        {
-            text: "Espero que sea tan simple como prometen. Estoy cansada de herramientas complicadas.",
-            type: "Consultora independiente"
-        },
-        {
-            text: "Si realmente me ayuda a no perder clientes por desorganización, va a cambiar mi negocio.",
-            type: "Coach de vida"
-        },
-        {
-            text: "Me gusta que sea hecho por emprendedores. Seguro entienden mis problemas reales.",
-            type: "Freelancer de marketing"
-        }
-    ];
+    // const expectations = [
+    //     {
+    //         text: "Espero que sea tan simple como prometen. Estoy cansada de herramientas complicadas.",
+    //         type: "Consultora independiente"
+    //     },
+    //     {
+    //         text: "Si realmente me ayuda a no perder clientes por desorganización, va a cambiar mi negocio.",
+    //         type: "Coach de vida"
+    //     },
+    //     {
+    //         text: "Me gusta que sea hecho por emprendedores. Seguro entienden mis problemas reales.",
+    //         type: "Freelancer de marketing"
+    //     }
+    // ];
 
     const faqs = [
         {
@@ -208,28 +228,46 @@ export default function Landing() {
                         </p>
 
                         {!auth.user && (
-                            <div id="email-form" className="max-w-md mx-auto mb-8">
-                                <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-4 mb-4">
+                            <div id="email-form" className="bg-white rounded-xl shadow-xl p-8 max-w-lg mx-auto mb-8 border-2 border-orange-100">
+                                <div className="text-center mb-6">
+                                    <h3 className="text-xl font-bold text-[#333333] mb-2">
+                                        🎯 Reserva tu lugar ahora
+                                    </h3>
+                                    <p className="text-[#666666] text-sm">
+                                        Solo para los primeros 500 emprendedores
+                                    </p>
+                                </div>
+
+                                <form onSubmit={handleEmailSubmit} className="space-y-4">
+                                    <Input
+                                        type="text"
+                                        placeholder="Tu nombre"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full"
+                                        required
+                                        disabled={isSubmitting}
+                                    />
                                     <Input
                                         type="email"
                                         placeholder="tu@email.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="flex-1"
+                                        className="w-full"
                                         required
                                         disabled={isSubmitting}
                                     />
                                     <Button
                                         type="submit"
-                                        className="bg-[#FF6B35] hover:bg-[#F7B801] text-white px-8"
-                                        disabled={isSubmitting}
+                                        className="w-full bg-[#FF6B35] hover:bg-[#F7B801] text-white py-3 text-lg font-semibold"
+                                        disabled={isSubmitting || !name.trim() || !email.trim()}
                                     >
-                                        {isSubmitting ? 'Enviando...' : 'Quiero acceso prioritario'}
+                                        {isSubmitting ? 'Reservando tu lugar...' : 'Reservar mi lugar 🚀'}
                                     </Button>
                                 </form>
 
                                 {message && (
-                                    <div className={`text-center p-3 rounded-lg ${
+                                    <div className={`mt-4 text-center p-3 rounded-lg ${
                                         message.type === 'success'
                                             ? 'bg-green-100 text-green-800 border border-green-200'
                                             : 'bg-red-100 text-red-800 border border-red-200'
@@ -237,46 +275,56 @@ export default function Landing() {
                                         {message.text}
                                     </div>
                                 )}
+
+                                <div className="mt-4 text-center text-xs text-[#999999]">
+                                    ✓ Sin compromiso • ✓ 3 meses gratis • ✓ Cancela cuando quieras
+                                </div>
                             </div>
                         )}
 
-                        <div className="flex flex-col items-center justify-center gap-4 mb-8">
-                            <Button size="lg" className="bg-[#FF6B35] hover:bg-[#F7B801] text-white px-8 py-3" onClick={() => document.getElementById('email-form')?.scrollIntoView({behavior: 'smooth'})}>
-                                Reservar mi lugar en octubre
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-
-                            <div className="flex items-center space-x-2 text-sm text-[#666666]">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                <span>{registeredCount} emprendedores ya se registraron</span>
-                            </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-[#666666] mb-8">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span>{registeredCount} emprendedores ya se registraron</span>
                         </div>
 
                         {/* Timeline visual */}
-                        <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
-                            <h3 className="text-lg font-semibold text-[#333333] mb-6 text-center">
-                                🗺️ Cronograma de lanzamiento
+                        <div className="bg-white rounded-lg shadow-xl p-10 max-w-3xl mx-auto">
+                            <h3 className="text-2xl font-bold text-[#333333] mb-8 text-center">
+                                Cronograma de lanzamiento
                             </h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                                    <div>
-                                        <span className="font-medium text-green-700">Agosto 2024</span>
-                                        <span className="text-[#666666] ml-2">Registro anticipado abierto</span>
+                            <div className="relative">
+                                {/* Línea conectora vertical */}
+                                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-green-500 via-orange-400 to-[#FF6B35]"></div>
+
+                                <div className="space-y-8">
+                                    <div className="flex items-start space-x-6 relative">
+                                        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center z-10 shadow-lg">
+                                            <Check className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="flex-1 pt-2">
+                                            <span className="text-xl font-bold text-green-700">Agosto 2024</span>
+                                            <p className="text-lg text-[#666666] mt-1">Registro anticipado abierto</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-4 h-4 bg-orange-400 rounded-full"></div>
-                                    <div>
-                                        <span className="font-medium text-orange-600">Septiembre 2024</span>
-                                        <span className="text-[#666666] ml-2">Beta privada para registrados</span>
+
+                                    <div className="flex items-start space-x-6 relative">
+                                        <div className="w-12 h-12 bg-orange-400 rounded-full flex items-center justify-center z-10 shadow-lg">
+                                            <Clock className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="flex-1 pt-2">
+                                            <span className="text-xl font-bold text-orange-600">Septiembre 2024</span>
+                                            <p className="text-lg text-[#666666] mt-1">Beta privada para registrados</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-4 h-4 bg-[#FF6B35] rounded-full animate-pulse"></div>
-                                    <div>
-                                        <span className="font-medium text-[#FF6B35]">Octubre 2024</span>
-                                        <span className="text-[#666666] ml-2">Lanzamiento oficial</span>
+
+                                    <div className="flex items-start space-x-6 relative">
+                                        <div className="w-12 h-12 bg-[#FF6B35] rounded-full flex items-center justify-center z-10 shadow-lg animate-pulse">
+                                            <ArrowRight className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="flex-1 pt-2">
+                                            <span className="text-xl font-bold text-[#FF6B35]">Octubre 2024</span>
+                                            <p className="text-lg text-[#666666] mt-1">Lanzamiento oficial</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -297,22 +345,34 @@ export default function Landing() {
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {painPoints.map((pain, index) => (
-                            <Card key={index} className="text-center p-8 border-orange-200 hover:shadow-lg transition-shadow">
-                                <CardContent className="pt-6">
-                                    <div className="text-6xl mb-6">
-                                        {pain.icon}
+                    <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+                        {/* Pain Points List */}
+                        <div className="space-y-8">
+                            {painPoints.map((pain, index) => (
+                                <div key={index} className="flex items-start space-x-6 p-6 bg-white rounded-lg border border-orange-100 hover:shadow-lg transition-shadow">
+                                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <pain.icon className="h-6 w-6 text-red-600" />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-[#333333] mb-4">
-                                        {pain.title}
-                                    </h3>
-                                    <p className="text-[#666666]">
-                                        {pain.description}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    <div className="flex-1">
+                                        <h3 className="text-xl font-semibold text-[#333333] mb-3">
+                                            {pain.title}
+                                        </h3>
+                                        <p className="text-[#666666] leading-relaxed">
+                                            {pain.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Image */}
+                        <div className="flex justify-center lg:justify-end">
+                            <img
+                                src="/images/caos.png"
+                                alt="Caos organizacional - emprendedor abrumado con sticky notes y desorganización"
+                                className="w-full max-w-md h-auto"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -351,7 +411,7 @@ export default function Landing() {
 
 
 
-            {/* Expectations */}
+            {/* Expectations - Comentado por ahora
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-16">
@@ -380,6 +440,7 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
+            */}
 
             {/* Early Access Benefits */}
             <section id="acceso" className="py-20 bg-[#FFFEF8]">
@@ -417,7 +478,7 @@ export default function Landing() {
                                     className="w-full bg-[#FF6B35] hover:bg-[#F7B801] text-white py-3 mb-4"
                                     onClick={() => document.getElementById('email-form')?.scrollIntoView({behavior: 'smooth'})}
                                 >
-                                    Quiero estos beneficios
+                                    Ir al formulario ↑
                                 </Button>
 
                                 <p className="text-sm text-[#666666]">
@@ -476,7 +537,7 @@ export default function Landing() {
             <section className="py-20 bg-[#FF6B35]">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-white mb-6">
-                        ¿Te cansasón los clientes perdidos?
+                        ¿Te cansaste los clientes perdidos?
                     </h2>
                     <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
                         Reserva tu lugar y no vuelvas a perder una oportunidad por desorganización.
@@ -547,7 +608,7 @@ export default function Landing() {
                     </div>
 
                     <div className="border-t border-gray-700 mt-12 pt-8 text-center text-sm text-gray-400">
-                        <p>&copy; 2024 Cliento. Lanzamiento octubre 2024. Hecho con ❤️ por emprendedores para emprendedores.</p>
+                        <p>&copy; 2025 Cliento. Lanzamiento octubre 2025. Hecho con ❤️ por emprendedores para emprendedores.</p>
                     </div>
                 </div>
             </footer>
