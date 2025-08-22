@@ -63,6 +63,15 @@ export default function Landing() {
                 }),
             });
 
+            if (!response.ok) {
+                if (response.status === 419) {
+                    setMessage({ type: 'error', text: 'Error de seguridad. Recarga la página e intenta de nuevo.' });
+                } else {
+                    setMessage({ type: 'error', text: `Error ${response.status}. Inténtalo de nuevo.` });
+                }
+                return;
+            }
+
             const data = await response.json();
 
             if (data.success) {
@@ -72,10 +81,11 @@ export default function Landing() {
                 // Actualizar contador
                 setRegisteredCount(prev => prev + 1);
             } else {
-                setMessage({ type: 'error', text: data.message });
+                setMessage({ type: 'error', text: data.message || 'Error al procesar la solicitud.' });
             }
-        } catch {
-            setMessage({ type: 'error', text: 'Hubo un error. Inténtalo de nuevo.' });
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            setMessage({ type: 'error', text: 'Error de conexión. Verifica tu internet e intenta de nuevo.' });
         } finally {
             setIsSubmitting(false);
         }
@@ -476,7 +486,14 @@ export default function Landing() {
 
                                 <Button
                                     className="w-full bg-[#FF6B35] hover:bg-[#F7B801] text-white py-3 mb-4"
-                                    onClick={() => document.getElementById('email-form')?.scrollIntoView({behavior: 'smooth'})}
+                                    onClick={() => {
+                                        const element = document.getElementById('email-form');
+                                        if (element) {
+                                            const yOffset = -100; // Scroll 100px más arriba
+                                            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                            window.scrollTo({top: y, behavior: 'smooth'});
+                                        }
+                                    }}
                                 >
                                     Ir al formulario ↑
                                 </Button>
@@ -546,7 +563,14 @@ export default function Landing() {
                     <Button
                         size="lg"
                         className="bg-white text-[#FF6B35] hover:bg-gray-100 px-8 py-3 text-lg"
-                        onClick={() => document.getElementById('email-form')?.scrollIntoView({behavior: 'smooth'})}
+                        onClick={() => {
+                            const element = document.getElementById('email-form');
+                            if (element) {
+                                const yOffset = -100; // Scroll 100px más arriba
+                                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                window.scrollTo({top: y, behavior: 'smooth'});
+                            }
+                        }}
                     >
                         Reservar mi lugar en octubre
                         <ArrowRight className="ml-2 h-5 w-5" />
