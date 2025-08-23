@@ -5,8 +5,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Cliente } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Eye, Pencil, Plus, Trash2, Search, Building } from 'lucide-react';
+import { Eye, Pencil, Plus, Trash2, Search, Building, ChevronUp, ChevronDown, ChevronsUpDown, X } from 'lucide-react';
 import { useState } from 'react';
+
+type SortField = 'nombre' | 'empresa' | 'email' | 'estado' | 'created_at';
+type SortOrder = 'asc' | 'desc';
 
 interface Props {
     clientes: {
@@ -18,7 +21,8 @@ interface Props {
     };
     filtros?: {
         buscar?: string;
-        estado?: string;
+        sort_field?: SortField;
+        sort_order?: SortOrder;
     };
 }
 
@@ -36,8 +40,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Index({ clientes, filtros }: Props) {
     const { data, setData } = useForm({
         buscar: filtros?.buscar || '',
-        estado: filtros?.estado || 'todos',
     });
+
+    const [sortField, setSortField] = useState<SortField | null>(filtros?.sort_field || null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(filtros?.sort_order || 'asc');
 
     // Generar iniciales para avatar
     const getInitials = (nombre: string, apellido: string) => {
@@ -61,29 +67,51 @@ export default function Index({ clientes, filtros }: Props) {
         e.preventDefault();
         router.get('/clientes', {
             buscar: data.buscar,
-            estado: data.estado
+            sort_field: sortField,
+            sort_order: sortOrder,
         }, {
             preserveState: true,
             preserveScroll: true
         });
     };
 
-    const handleFilterChange = (value: string) => {
-        setData('estado', value);
-        router.get('/clientes', {
-            buscar: data.buscar,
-            estado: value
-        }, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    };
 
     const handleDelete = (id: number) => {
         if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
             router.delete(`/clientes/${id}`);
         }
     };
+
+    const handleSort = (field: SortField) => {
+        let newOrder: SortOrder = 'asc';
+
+        if (sortField === field) {
+            newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        }
+
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        router.get('/clientes', {
+            buscar: data.buscar,
+            sort_field: field,
+            sort_order: newOrder,
+        }, {
+            preserveState: true,
+            preserveScroll: true
+        });
+    };
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) {
+            return <ChevronsUpDown className="ml-1 h-3 w-3 text-gray-400" />;
+        }
+
+        return sortOrder === 'asc'
+            ? <ChevronUp className="ml-1 h-3 w-3 text-[#FF6B35]" />
+            : <ChevronDown className="ml-1 h-3 w-3 text-[#FF6B35]" />;
+    };
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -92,7 +120,7 @@ export default function Index({ clientes, filtros }: Props) {
             <div className="min-h-screen bg-[#F8F9FA]">
                 {/* Header naranja */}
                 <div className="bg-[#FF6B35]">
-                    <div className="max-w-7xl mx-auto px-8 py-6">
+                    <div className="mx-auto px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-[28px] font-bold text-white">
@@ -116,7 +144,8 @@ export default function Index({ clientes, filtros }: Props) {
                                             onBlur={() => {
                                                 router.get('/clientes', {
                                                     buscar: data.buscar,
-                                                    estado: data.estado
+                                                    sort_field: sortField,
+                                                    sort_order: sortOrder,
                                                 }, {
                                                     preserveState: true,
                                                     preserveScroll: true
@@ -132,20 +161,6 @@ export default function Index({ clientes, filtros }: Props) {
                                     </div>
                                 </form>
 
-                                {/* Filtros dropdown */}
-                                <Select
-                                    value={data.estado}
-                                    onValueChange={handleFilterChange}
-                                >
-                                    <SelectTrigger className="w-40 bg-white border-0 text-gray-600">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                                        <SelectItem value="todos" className="hover:bg-gray-100 cursor-pointer">Todos</SelectItem>
-                                        <SelectItem value="activo" className="hover:bg-gray-100 cursor-pointer">Activos</SelectItem>
-                                        <SelectItem value="inactivo" className="hover:bg-gray-100 cursor-pointer">Inactivos</SelectItem>
-                                    </SelectContent>
-                                </Select>
 
                                 {/* Botón Nuevo Cliente */}
                                 <Link href="/clientes/create">
@@ -158,6 +173,8 @@ export default function Index({ clientes, filtros }: Props) {
                         </div>
                     </div>
                 </div>
+
+
 
                 {/* Contenido principal */}
                 <div className=" mx-auto p-6">
@@ -172,8 +189,8 @@ export default function Index({ clientes, filtros }: Props) {
                                     No se encontraron clientes
                                 </h3>
                                 <p className="text-gray-500 mb-6">
-                                    {data.buscar || data.estado !== 'todos'
-                                        ? 'Ajusta los filtros o agrega nuevos clientes.'
+                                    {data.buscar
+                                        ? 'Ajusta la búsqueda o agrega nuevos clientes.'
                                         : 'Comienza agregando tu primer cliente.'
                                     }
                                 </p>
@@ -190,19 +207,49 @@ export default function Index({ clientes, filtros }: Props) {
                                 <div className="bg-[#E5E7EB] px-5 py-4 border-b border-[#E5E7EB]">
                                     <div className="grid grid-cols-12 gap-4 items-center">
                                         <div className="col-span-4 lg:col-span-3">
-                                            <span className="text-[#333] font-semibold text-sm">CLIENTE</span>
+                                            <button
+                                                onClick={() => handleSort('nombre')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                NOMBRE
+                                                {getSortIcon('nombre')}
+                                            </button>
                                         </div>
                                         <div className="hidden lg:block lg:col-span-2">
-                                            <span className="text-[#333] font-semibold text-sm">EMPRESA</span>
+                                            <button
+                                                onClick={() => handleSort('empresa')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                EMPRESA
+                                                {getSortIcon('empresa')}
+                                            </button>
                                         </div>
                                         <div className="hidden md:block md:col-span-3">
-                                            <span className="text-[#333] font-semibold text-sm">EMAIL</span>
+                                            <button
+                                                onClick={() => handleSort('email')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                EMAIL
+                                                {getSortIcon('email')}
+                                            </button>
                                         </div>
                                         <div className="col-span-2 lg:col-span-1">
-                                            <span className="text-[#333] font-semibold text-sm">ESTADO</span>
+                                            <button
+                                                onClick={() => handleSort('estado')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                ESTADO
+                                                {getSortIcon('estado')}
+                                            </button>
                                         </div>
                                         <div className="hidden lg:block lg:col-span-2">
-                                            <span className="text-[#333] font-semibold text-sm">ÚLTIMO CONTACTO</span>
+                                            <button
+                                                onClick={() => handleSort('created_at')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                ÚLTIMO CONTACTO
+                                                {getSortIcon('created_at')}
+                                            </button>
                                         </div>
                                         <div className="col-span-6 lg:col-span-1 text-right">
                                             <span className="text-[#333] font-semibold text-sm">ACCIONES</span>

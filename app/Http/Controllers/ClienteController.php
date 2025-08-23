@@ -16,7 +16,7 @@ class ClienteController extends Controller
     {
         $query = Cliente::query();
 
-        // Filtro de búsqueda
+        // Filtro de búsqueda general
         if ($request->filled('buscar')) {
             $buscar = $request->get('buscar');
             $query->where(function($q) use ($buscar) {
@@ -27,18 +27,30 @@ class ClienteController extends Controller
             });
         }
 
-        // Filtro de estado
-        if ($request->filled('estado') && $request->get('estado') !== 'todos') {
-            $query->where('estado', $request->get('estado'));
+
+
+        // Ordenamiento
+        $sortField = $request->get('sort_field', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Validar campos de ordenamiento
+        $allowedSortFields = ['nombre', 'empresa', 'email', 'estado', 'created_at'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'created_at';
+        }
+        
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
         }
 
-        $clientes = $query->orderBy('created_at', 'desc')->paginate(10);
+        $clientes = $query->orderBy($sortField, $sortOrder)->paginate(10);
         
         return Inertia::render('Clientes/Index', [
             'clientes' => $clientes,
             'filtros' => [
                 'buscar' => $request->get('buscar'),
-                'estado' => $request->get('estado', 'todos')
+                'sort_field' => $sortField,
+                'sort_order' => $sortOrder,
             ]
         ]);
     }

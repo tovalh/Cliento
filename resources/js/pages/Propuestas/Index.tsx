@@ -28,10 +28,16 @@ import {
     ArrowUpDown,
     ChevronUp,
     ChevronDown,
+    ChevronsUpDown,
     AlertTriangle,
-    Building2
+    Building2,
+    Pencil,
+    Building
 } from 'lucide-react';
 import { useState } from 'react';
+
+type SortField = 'titulo' | 'cliente' | 'estado' | 'precio_total' | 'fecha_limite_respuesta' | 'created_at';
+type SortOrder = 'asc' | 'desc';
 
 // Types
 interface Cliente {
@@ -156,20 +162,45 @@ export default function Index({ propuestas, filtros, estadisticas }: Props) {
         direccion: filtros.direccion || 'desc',
     });
 
+    const [sortField, setSortField] = useState<SortField | null>(filtros?.orden as SortField || null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(filtros?.direccion as SortOrder || 'asc');
+
     const handleFilter = () => {
         router.get('/propuestas', data, { preserveState: true });
     };
 
-    const handleSort = (campo: string) => {
-        const newDirection = data.orden === campo && data.direccion === 'asc' ? 'desc' : 'asc';
-        setData({
-            ...data,
-            orden: campo,
-            direccion: newDirection
+    const handleSort = (field: SortField) => {
+        let newOrder: SortOrder = 'asc';
+
+        if (sortField === field) {
+            newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        }
+
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        router.get('/propuestas', {
+            buscar: data.buscar,
+            estado: data.estado,
+            cliente: data.cliente,
+            fecha_desde: data.fecha_desde,
+            fecha_hasta: data.fecha_hasta,
+            orden: field,
+            direccion: newOrder,
+        }, {
+            preserveState: true,
+            preserveScroll: true
         });
-        router.get('/propuestas', { ...data, orden: campo, direccion: newDirection }, { 
-            preserveState: true
-        });
+    };
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) {
+            return <ChevronsUpDown className="ml-1 h-3 w-3 text-gray-400" />;
+        }
+
+        return sortOrder === 'asc'
+            ? <ChevronUp className="ml-1 h-3 w-3 text-[#FF6B35]" />
+            : <ChevronDown className="ml-1 h-3 w-3 text-[#FF6B35]" />;
     };
 
     const handleDelete = (id: number) => {
@@ -275,56 +306,80 @@ export default function Index({ propuestas, filtros, estadisticas }: Props) {
         return configs[estado as keyof typeof configs] || configs.borrador;
     };
 
-    const SortButton = ({ campo, children }: { campo: string; children: React.ReactNode }) => (
-        <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleSort(campo)}
-            className="h-auto p-1 font-medium text-gray-600 hover:text-gray-900"
-        >
-            {children}
-            <ArrowUpDown className="ml-1 h-3 w-3" />
-            {data.orden === campo && (
-                data.direccion === 'asc' ? 
-                <ChevronUp className="ml-1 h-3 w-3 text-blue-600" /> : 
-                <ChevronDown className="ml-1 h-3 w-3 text-blue-600" />
-            )}
-        </Button>
-    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Propuestas" />
-            
-            <div className="min-h-screen bg-background p-8">
-                <div className="mx-auto max-w-7xl space-y-8">
-                    {/* Header Section */}
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                            <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-                                Propuestas Comerciales
-                            </h1>
-                            <p className="text-lg text-gray-600">
-                                Gestiona y organiza todas tus propuestas de negocio
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="outline"
-                                onClick={() => setActiveFilters(!activeFilters)}
-                                className="bg-white shadow-sm hover:shadow-md transition-all"
-                            >
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filtros
-                            </Button>
-                            <Link href="/propuestas/create">
-                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nueva Propuesta
+
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Header naranja */}
+                <div className="bg-[#FF6B35]">
+                    <div className="mx-auto px-8 py-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-[28px] font-bold text-white">
+                                    Propuestas
+                                </h1>
+                                <p className="text-white text-base opacity-90 mt-1">
+                                    Gestiona y organiza todas tus propuestas comerciales
+                                </p>
+                            </div>
+
+                            <div className="flex items-center space-x-4">
+                                {/* Barra de búsqueda */}
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Buscar propuestas..."
+                                        value={data.buscar}
+                                        onChange={(e) => setData('buscar', e.target.value)}
+                                        onBlur={() => {
+                                            router.get('/propuestas', {
+                                                buscar: data.buscar,
+                                                estado: data.estado,
+                                                cliente: data.cliente,
+                                                fecha_desde: data.fecha_desde,
+                                                fecha_hasta: data.fecha_hasta,
+                                                orden: data.orden,
+                                                direccion: data.direccion,
+                                            }, {
+                                                preserveState: true,
+                                                preserveScroll: true
+                                            });
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                handleFilter();
+                                            }
+                                        }}
+                                        className="pl-10 w-[300px] bg-white border-0"
+                                    />
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setActiveFilters(!activeFilters)}
+                                    className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm"
+                                >
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    Filtros
                                 </Button>
-                            </Link>
+
+                                {/* Botón Nueva Propuesta */}
+                                <Link href="/propuestas/create">
+                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nueva Propuesta
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Contenido principal */}
+                <div className="mx-auto p-6 space-y-8">
 
                     {/* Statistics Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
@@ -506,171 +561,234 @@ export default function Index({ propuestas, filtros, estadisticas }: Props) {
                         </Card>
                     )}
 
-                    {/* Main Content */}
-                    <Card className="bg-card border shadow-lg overflow-hidden">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200">
-                            <div className="grid grid-cols-12 gap-4 items-center text-sm font-semibold text-gray-600">
-                                <div className="col-span-3">
-                                    <SortButton campo="titulo">PROPUESTA</SortButton>
+                    {/* Tabla de propuestas */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {propuestas.data.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="text-gray-400 mb-4">
+                                    <Search className="h-16 w-16 mx-auto" />
                                 </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="cliente">CLIENTE</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="estado">ESTADO</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="precio_total">VALOR</SortButton>
-                                </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="fecha_limite_respuesta">FECHA LÍMITE</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="created_at">CREACIÓN</SortButton>
-                                </div>
-                                <div className="col-span-2 text-center">ACCIONES</div>
+                                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                                    No se encontraron propuestas
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {data.buscar
+                                        ? 'Ajusta la búsqueda o agrega nuevas propuestas.'
+                                        : 'Comienza agregando tu primera propuesta.'
+                                    }
+                                </p>
+                                <Link href="/propuestas/create">
+                                    <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white hover:text-white transition-colors cursor-pointer">
+                                        <Plus className="mr-2 h-4 w-4 text-white" />
+                                        Crear primera propuesta
+                                    </Button>
+                                </Link>
                             </div>
-                        </CardHeader>
-
-                        <CardContent className="p-0">
-                            {propuestas.data.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                                        No se encontraron propuestas
-                                    </h3>
-                                    <p className="text-gray-500 mb-4">
-                                        Ajusta los filtros o crea tu primera propuesta comercial.
-                                    </p>
-                                    <Link href="/propuestas/create">
-                                        <Button>
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Crear Primera Propuesta
-                                        </Button>
-                                    </Link>
+                        ) : (
+                            <>
+                                {/* Header de tabla */}
+                                <div className="bg-[#E5E7EB] px-5 py-4 border-b border-[#E5E7EB]">
+                                    <div className="grid grid-cols-12 gap-4 items-center">
+                                        <div className="col-span-3 lg:col-span-3">
+                                            <button
+                                                onClick={() => handleSort('titulo')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                PROPUESTA
+                                                {getSortIcon('titulo')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('cliente')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                CLIENTE
+                                                {getSortIcon('cliente')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('estado')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                ESTADO
+                                                {getSortIcon('estado')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden md:block md:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('precio_total')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                VALOR
+                                                {getSortIcon('precio_total')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('fecha_limite_respuesta')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                FECHA LÍMITE
+                                                {getSortIcon('fecha_limite_respuesta')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('created_at')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                CREACIÓN
+                                                {getSortIcon('created_at')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-7 lg:col-span-2 text-right">
+                                            <span className="text-[#333] font-semibold text-sm">ACCIONES</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="divide-y divide-gray-100">
-                                    {propuestas.data.map((propuesta) => {
+
+                                {/* Filas de datos */}
+                                <div>
+                                    {propuestas.data.map((propuesta, index) => {
                                         const estadoConfig = getEstadoConfig(propuesta.estado);
                                         
                                         return (
-                                            <div 
-                                                key={propuesta.id} 
-                                                className="p-6 hover:bg-gray-50 transition-all duration-200"
+                                            <div
+                                                key={propuesta.id}
+                                                className={`px-5 py-5 border-b border-[#E5E7EB] hover:bg-[#F1F5F9] cursor-pointer transition-colors ${
+                                                    index % 2 === 0 ? 'bg-[#F8F9FA]' : 'bg-[#FFFFFF]'
+                                                }`}
+                                                onClick={() => router.visit(`/propuestas/${propuesta.id}`)}
                                             >
                                                 <div className="grid grid-cols-12 gap-4 items-center">
-                                                    <div className="col-span-3">
-                                                        <h3 className="font-semibold text-gray-900 mb-1">
-                                                            {propuesta.titulo}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600 line-clamp-2">
-                                                            {propuesta.descripcion_proyecto}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="col-span-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <User className="h-4 w-4 text-gray-400" />
-                                                            <span className="font-medium text-gray-900">
-                                                                {propuesta.cliente.nombre} {propuesta.cliente.apellido}
-                                                            </span>
+                                                    {/* Columna Propuesta */}
+                                                    <div className="col-span-3 lg:col-span-3 flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-[#FF6B35] rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <FileText className="h-5 w-5 text-white" />
                                                         </div>
-                                                        {propuesta.cliente.empresa && (
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Building2 className="h-3 w-3 text-gray-400" />
-                                                                <p className="text-sm text-gray-500">
-                                                                    {propuesta.cliente.empresa}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="col-span-1">
-                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${estadoConfig.bg}`}>
-                                                            <span className="text-sm">
-                                                                {estadoConfig.emoji}
-                                                            </span>
-                                                            <span className={`text-xs font-medium ${estadoConfig.color}`}>
-                                                                {estadoConfig.label}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-span-1">
-                                                        <p className="font-bold text-green-600">
-                                                            {formatPrice(propuesta.precio_total)}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="col-span-2">
-                                                        <div className="space-y-1">
-                                                            <p className="text-sm font-medium text-gray-700">
-                                                                {formatDate(propuesta.fecha_limite_respuesta)}
+                                                        <div className="min-w-0 flex-1">
+                                                            <h3 className="text-base font-bold text-[#333] truncate">
+                                                                {propuesta.titulo}
+                                                            </h3>
+                                                            <p className="text-sm text-[#666] truncate">
+                                                                {propuesta.descripcion_proyecto}
                                                             </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Columna Cliente */}
+                                                    <div className="hidden lg:block lg:col-span-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                            <div>
+                                                                <p className="text-sm text-[#666] truncate font-medium">
+                                                                    {propuesta.cliente.nombre} {propuesta.cliente.apellido}
+                                                                </p>
+                                                                {propuesta.cliente.empresa && (
+                                                                    <div className="flex items-center gap-1 mt-1">
+                                                                        <Building className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                                        <p className="text-xs text-[#666] truncate">
+                                                                            {propuesta.cliente.empresa}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Columna Estado */}
+                                                    <div className="col-span-2 lg:col-span-1">
+                                                        <Badge
+                                                            className={`rounded-xl px-3 py-1 text-xs font-medium ${
+                                                                propuesta.estado === 'aprobada'
+                                                                    ? "bg-[#059669] text-white hover:bg-[#059669]"
+                                                                    : propuesta.estado === 'enviada'
+                                                                    ? "bg-[#0284C7] text-white hover:bg-[#0284C7]"
+                                                                    : propuesta.estado === 'rechazada'
+                                                                    ? "bg-[#DC2626] text-white hover:bg-[#DC2626]"
+                                                                    : propuesta.estado === 'negociacion'
+                                                                    ? "bg-[#D97706] text-white hover:bg-[#D97706]"
+                                                                    : "bg-[#6B7280] text-white hover:bg-[#6B7280]"
+                                                            }`}
+                                                        >
+                                                            {estadoConfig.emoji} {estadoConfig.label}
+                                                        </Badge>
+                                                    </div>
+
+                                                    {/* Columna Valor */}
+                                                    <div className="hidden md:block md:col-span-1">
+                                                        <span className="text-sm text-[#059669] font-bold block">
+                                                            {formatPrice(propuesta.precio_total)}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Columna Fecha Límite */}
+                                                    <div className="hidden lg:block lg:col-span-2">
+                                                        <div>
+                                                            <span className="text-[13px] text-[#666]">
+                                                                {formatDate(propuesta.fecha_limite_respuesta)}
+                                                            </span>
                                                             {propuesta.fecha_limite_respuesta && new Date(propuesta.fecha_limite_respuesta) < new Date() && propuesta.estado === 'enviada' && (
-                                                                <span className="text-xs text-red-600 font-medium">
+                                                                <div className="text-xs text-red-600 font-medium mt-1">
                                                                     ⚠️ Vencida
-                                                                </span>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-span-1">
-                                                        <p className="text-sm text-gray-500">
+                                                    {/* Columna Creación */}
+                                                    <div className="hidden lg:block lg:col-span-1">
+                                                        <span className="text-[13px] text-[#666]">
                                                             {formatDate(propuesta.created_at)}
-                                                        </p>
+                                                        </span>
                                                     </div>
 
-                                                    <div className="col-span-2 flex justify-center gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => router.visit(`/propuestas/${propuesta.id}`)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-indigo-50 hover:border-indigo-300"
-                                                            title="Ver propuesta"
-                                                        >
-                                                            <Eye className="h-3 w-3" />
-                                                        </Button>
-                                                        
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => router.visit(`/propuestas/${propuesta.id}/edit`)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
-                                                            title="Editar propuesta"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                        </Button>
+                                                    {/* Columna Acciones */}
+                                                    <div className="col-span-7 lg:col-span-2 flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <Link href={`/propuestas/${propuesta.id}`}>
+                                                            <button
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                                title="Ver propuesta"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </button>
+                                                        </Link>
 
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
+                                                        <Link href={`/propuestas/${propuesta.id}/edit`}>
+                                                            <button
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                                title="Editar propuesta"
+                                                            >
+                                                                <Pencil className="h-4 w-4" />
+                                                            </button>
+                                                        </Link>
+
+                                                        <button
                                                             onClick={() => handleDuplicar(propuesta.id)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-green-50 hover:border-green-300"
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
                                                             title="Duplicar propuesta"
                                                         >
-                                                            <Copy className="h-3 w-3" />
-                                                        </Button>
-                                                        
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
+                                                            <Copy className="h-4 w-4" />
+                                                        </button>
+
+                                                        <button
                                                             onClick={() => handleDelete(propuesta.id)}
-                                                            className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
                                                             title="Eliminar propuesta"
                                                         >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                            </>
+                        )}
+                    </div>
 
                     {/* Pagination */}
                     {propuestas.last_page > 1 && (
