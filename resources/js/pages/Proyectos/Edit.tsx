@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -140,27 +139,29 @@ export default function Edit({ proyecto }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Main Form */}
                         <div className="lg:col-span-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5" />
+                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-8">
+                                    <h2 className="text-lg font-semibold text-[#333] mb-6 pb-2 border-b border-gray-200 flex items-center gap-2">
+                                        <FileText className="h-5 w-5 text-[#FF6B35]" />
                                         Información del Proyecto
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
+                                    </h2>
                                     <form onSubmit={handleSubmit} className="space-y-6">
-                                        <div>
-                                            <Label htmlFor="nombre">Nombre del Proyecto *</Label>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="nombre" className="text-sm font-semibold text-[#333]">
+                                                Nombre del Proyecto *
+                                            </Label>
                                             <Input
                                                 id="nombre"
                                                 value={data.nombre}
                                                 onChange={(e) => setData('nombre', e.target.value)}
-                                                className={errors.nombre ? 'border-red-500' : ''}
+                                                className={`border-gray-300 focus:border-[#FF6B35] focus:ring-[#FF6B35] ${
+                                                    errors.nombre ? 'border-red-500' : ''
+                                                }`}
                                                 placeholder="Ej: Desarrollo de sitio web corporativo"
                                                 required
                                             />
                                             {errors.nombre && (
-                                                <p className="text-sm text-red-600 mt-1">{errors.nombre}</p>
+                                                <p className="text-sm text-red-500 mt-1">{errors.nombre}</p>
                                             )}
                                         </div>
 
@@ -279,96 +280,96 @@ export default function Edit({ proyecto }: Props) {
                                             </Link>
                                         </div>
                                     </form>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Sidebar with Context Info */}
                         <div className="space-y-6">
                             {/* Client Info */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <User className="h-5 w-5" />
+                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-6">
+                                    <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
+                                        <User className="h-5 w-5 text-[#FF6B35]" />
                                         Cliente
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div>
-                                        <p className="font-medium text-gray-900">
-                                            {proyecto.cliente.nombre} {proyecto.cliente.apellido}
-                                        </p>
-                                        {proyecto.cliente.empresa && (
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Building2 className="h-4 w-4 text-gray-400" />
-                                                <p className="text-sm text-gray-600">{proyecto.cliente.empresa}</p>
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="font-medium text-gray-900">
+                                                {proyecto.cliente.nombre} {proyecto.cliente.apellido}
+                                            </p>
+                                            {proyecto.cliente.empresa && (
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <Building2 className="h-4 w-4 text-gray-400" />
+                                                    <p className="text-sm text-gray-600">{proyecto.cliente.empresa}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <Link href={`/clientes/${proyecto.cliente.id}`}>
+                                            <Button variant="outline" className="w-full">
+                                                Ver Cliente
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Propuesta Original */}
+                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-6">
+                                    <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
+                                        <FileText className="h-5 w-5 text-[#FF6B35]" />
+                                        Propuesta Original
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-600">Título</Label>
+                                            <p className="mt-1 text-gray-900">{proyecto.propuesta.titulo}</p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-600">Valor Original</Label>
+                                            <p className="mt-1 text-gray-900 font-bold text-green-600">
+                                                ${proyecto.propuesta.precio_total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                                            </p>
+                                        </div>
+                                        
+                                        <Link href={`/propuestas/${proyecto.propuesta.id}`}>
+                                            <Button variant="outline" className="w-full">
+                                                Ver Propuesta
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Project Timeline */}
+                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-6">
+                                    <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
+                                        <Calendar className="h-5 w-5 text-[#FF6B35]" />
+                                        Cronología
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <Label className="text-sm font-medium text-gray-600">Proyecto Creado</Label>
+                                            <p className="mt-1 text-gray-900">{formatDate(proyecto.created_at)}</p>
+                                        </div>
+                                        {proyecto.fecha_inicio && (
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-600">Fecha Inicio Actual</Label>
+                                                <p className="mt-1 text-gray-900">{formatDate(proyecto.fecha_inicio)}</p>
+                                            </div>
+                                        )}
+                                        {proyecto.fecha_entrega && (
+                                            <div>
+                                                <Label className="text-sm font-medium text-gray-600">Fecha Entrega Actual</Label>
+                                                <p className="mt-1 text-gray-900">{formatDate(proyecto.fecha_entrega)}</p>
                                             </div>
                                         )}
                                     </div>
-                                    
-                                    <Link href={`/clientes/${proyecto.cliente.id}`}>
-                                        <Button variant="outline" className="w-full">
-                                            Ver Cliente
-                                        </Button>
-                                    </Link>
-                                </CardContent>
-                            </Card>
-
-                            {/* Propuesta Original */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5" />
-                                        Propuesta Original
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-600">Título</Label>
-                                        <p className="mt-1 text-gray-900">{proyecto.propuesta.titulo}</p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-600">Valor Original</Label>
-                                        <p className="mt-1 text-gray-900 font-bold text-green-600">
-                                            ${proyecto.propuesta.precio_total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-                                        </p>
-                                    </div>
-                                    
-                                    <Link href={`/propuestas/${proyecto.propuesta.id}`}>
-                                        <Button variant="outline" className="w-full">
-                                            Ver Propuesta
-                                        </Button>
-                                    </Link>
-                                </CardContent>
-                            </Card>
-
-                            {/* Project Timeline */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Calendar className="h-5 w-5" />
-                                        Cronología
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-600">Proyecto Creado</Label>
-                                        <p className="mt-1 text-gray-900">{formatDate(proyecto.created_at)}</p>
-                                    </div>
-                                    {proyecto.fecha_inicio && (
-                                        <div>
-                                            <Label className="text-sm font-medium text-gray-600">Fecha Inicio Actual</Label>
-                                            <p className="mt-1 text-gray-900">{formatDate(proyecto.fecha_inicio)}</p>
-                                        </div>
-                                    )}
-                                    {proyecto.fecha_entrega && (
-                                        <div>
-                                            <Label className="text-sm font-medium text-gray-600">Fecha Entrega Actual</Label>
-                                            <p className="mt-1 text-gray-900">{formatDate(proyecto.fecha_entrega)}</p>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

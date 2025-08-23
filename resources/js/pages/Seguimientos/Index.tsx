@@ -74,9 +74,14 @@ import {
     RotateCcw,
     ArrowUpDown,
     ChevronUp,
-    ChevronDown
+    ChevronDown,
+    ChevronsUpDown,
+    Pencil
 } from 'lucide-react';
 import { useState } from 'react';
+
+type SortField = 'titulo' | 'cliente' | 'fecha_seguimiento' | 'tipo' | 'prioridad' | 'completado';
+type SortOrder = 'asc' | 'desc';
 
 interface Props {
     seguimientos: {
@@ -126,6 +131,9 @@ export default function Index({ seguimientos, filtros }: Props) {
         direccion: filtros.direccion || 'asc',
     });
 
+    const [sortField, setSortField] = useState<SortField | null>(filtros?.orden as SortField || null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(filtros?.direccion as SortOrder || 'asc');
+
     const handleFilter = () => {
         // Filtrar valores vacíos antes de enviar
         const filteredData = Object.fromEntries(
@@ -138,16 +146,38 @@ export default function Index({ seguimientos, filtros }: Props) {
         });
     };
 
-    const handleSort = (campo: string) => {
-        const newDirection = data.orden === campo && data.direccion === 'asc' ? 'desc' : 'asc';
-        setData({
-            ...data,
-            orden: campo,
-            direccion: newDirection
+    const handleSort = (field: SortField) => {
+        let newOrder: SortOrder = 'asc';
+
+        if (sortField === field) {
+            newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        }
+
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        router.get('/seguimientos', {
+            buscar: data.buscar,
+            estado: data.estado,
+            prioridad: data.prioridad,
+            tipo: data.tipo,
+            cliente: data.cliente,
+            orden: field,
+            direccion: newOrder,
+        }, {
+            preserveState: true,
+            preserveScroll: true
         });
-        router.get('/seguimientos', { ...data, orden: campo, direccion: newDirection }, {
-            preserveState: true
-        });
+    };
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) {
+            return <ChevronsUpDown className="ml-1 h-3 w-3 text-gray-400" />;
+        }
+
+        return sortOrder === 'asc'
+            ? <ChevronUp className="ml-1 h-3 w-3 text-[#FF6B35]" />
+            : <ChevronDown className="ml-1 h-3 w-3 text-[#FF6B35]" />;
     };
 
     const handleComplete = (id: number) => {
@@ -248,56 +278,60 @@ export default function Index({ seguimientos, filtros }: Props) {
     ).length;
     const completados = seguimientos.data.filter(s => s.completado).length;
 
-    const SortButton = ({ campo, children }: { campo: string; children: React.ReactNode }) => (
-        <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleSort(campo)}
-            className="h-auto p-1 font-medium text-gray-600 hover:text-gray-900"
-        >
-            {children}
-            <ArrowUpDown className="ml-1 h-3 w-3" />
-            {data.orden === campo && (
-                data.direccion === 'asc' ?
-                <ChevronUp className="ml-1 h-3 w-3 text-blue-600" /> :
-                <ChevronDown className="ml-1 h-3 w-3 text-blue-600" />
-            )}
-        </Button>
-    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Seguimientos" />
 
-            <div className="min-h-screen bg-background p-8">
-                <div className="mx-auto max-w-7xl space-y-8">
-                    {/* Header Section */}
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                            <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-                                Seguimientos
-                            </h1>
-                            <p className="text-lg text-gray-600">
-                                Gestiona y organiza todos tus seguimientos de manera eficiente
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="outline"
-                                onClick={() => setActiveFilters(!activeFilters)}
-                                className="bg-white text-slate-700 font-semibold rounded-lg border border-slate-300 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            >
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filtros
-                            </Button>
-                            <Link href="/clientes">
-                                <Button className="bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Nuevo Seguimiento
-                                </Button>
-                            </Link>
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Header naranja */}
+                <div className="bg-[#FF6B35]">
+                    <div className="mx-auto px-8 py-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-[28px] font-bold text-white">
+                                    Seguimientos
+                                </h1>
+                                <p className="text-white text-base opacity-90 mt-1">
+                                    Gestiona y organiza todos tus seguimientos de manera eficiente
+                                </p>
+                            </div>
+
+                            <div className="flex items-center space-x-4">
+                                {/* Barra de búsqueda */}
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Buscar seguimientos..."
+                                        value={data.buscar}
+                                        onChange={(e) => setData('buscar', e.target.value)}
+                                        onBlur={() => {
+                                            handleFilter();
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                handleFilter();
+                                            }
+                                        }}
+                                        className="pl-10 w-[300px] bg-white border-0"
+                                    />
+                                </div>
+
+                                {/* Botón Nuevo Seguimiento */}
+                                <Link href="/seguimientos/create">
+                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nuevo Seguimiento
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Contenido principal */}
+                <div className="mx-auto p-6 space-y-8">
 
                     {/* Statistics Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -450,45 +484,88 @@ export default function Index({ seguimientos, filtros }: Props) {
                         </Card>
                     )}
 
-                    {/* Main Content */}
-                    <Card className="bg-card border shadow-lg overflow-hidden">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200 py-6">
-                            <div className="grid grid-cols-12 gap-4 items-center text-sm font-semibold text-gray-600">
-                                <div className="col-span-3">
-                                    <SortButton campo="titulo">SEGUIMIENTO</SortButton>
+                    {/* Tabla de seguimientos */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {seguimientos.data.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="text-gray-400 mb-4">
+                                    <Search className="h-16 w-16 mx-auto" />
                                 </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="cliente">CLIENTE</SortButton>
-                                </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="fecha_seguimiento">FECHA</SortButton>
-                                </div>
-                                <div className="col-span-1 text-center">
-                                    <SortButton campo="tipo">TIPO</SortButton>
-                                </div>
-                                <div className="col-span-1 text-center">
-                                    <SortButton campo="prioridad">PRIORIDAD</SortButton>
-                                </div>
-                                <div className="col-span-3 text-center">
-                                    <span className="text-sm font-semibold text-gray-600">ACCIONES</span>
-                                </div>
+                                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                                    No se encontraron seguimientos
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {data.buscar
+                                        ? 'Ajusta la búsqueda o agrega nuevos seguimientos.'
+                                        : 'Comienza agregando tu primer seguimiento.'
+                                    }
+                                </p>
+                                <Link href="/seguimientos/create">
+                                    <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white hover:text-white transition-colors cursor-pointer">
+                                        <Plus className="mr-2 h-4 w-4 text-white" />
+                                        Crear primer seguimiento
+                                    </Button>
+                                </Link>
                             </div>
-                        </CardHeader>
-
-                        <CardContent className="p-0">
-                            {seguimientos.data.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                                        No se encontraron seguimientos
-                                    </h3>
-                                    <p className="text-gray-500">
-                                        Ajusta los filtros o agrega nuevos seguimientos desde las fichas de clientes.
-                                    </p>
+                        ) : (
+                            <>
+                                {/* Header de tabla */}
+                                <div className="bg-[#E5E7EB] px-5 py-4 border-b border-[#E5E7EB]">
+                                    <div className="grid grid-cols-12 gap-4 items-center">
+                                        <div className="col-span-3 lg:col-span-3">
+                                            <button
+                                                onClick={() => handleSort('titulo')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                SEGUIMIENTO
+                                                {getSortIcon('titulo')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('cliente')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                CLIENTE
+                                                {getSortIcon('cliente')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden md:block md:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('fecha_seguimiento')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                FECHA
+                                                {getSortIcon('fecha_seguimiento')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('tipo')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                TIPO
+                                                {getSortIcon('tipo')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('prioridad')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                PRIORIDAD
+                                                {getSortIcon('prioridad')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-7 lg:col-span-3 text-right">
+                                            <span className="text-[#333] font-semibold text-sm">ACCIONES</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="divide-y divide-gray-100">
-                                    {seguimientos.data.map((seguimiento) => {
+
+                                {/* Filas de datos */}
+                                <div>
+                                    {seguimientos.data.map((seguimiento, index) => {
                                         const dateInfo = formatDate(seguimiento.fecha_seguimiento);
                                         const tipoConfig = getTipoConfig(seguimiento.tipo);
                                         const prioridadConfig = getPrioridadConfig(seguimiento.prioridad);
@@ -496,44 +573,72 @@ export default function Index({ seguimientos, filtros }: Props) {
                                         return (
                                             <div
                                                 key={seguimiento.id}
-                                                className={`p-2 border-l-2 hover:bg-gray-50 transition-all duration-200 ${getStatusColor(seguimiento)}`}
+                                                className={`px-5 py-5 border-b border-[#E5E7EB] hover:bg-[#F1F5F9] cursor-pointer transition-colors ${
+                                                    index % 2 === 0 ? 'bg-[#F8F9FA]' : 'bg-[#FFFFFF]'
+                                                }`}
+                                                onClick={() => router.visit(`/clientes/${seguimiento.cliente_id}`)}
                                             >
                                                 <div className="grid grid-cols-12 gap-4 items-center">
-                                                    <div className="col-span-3">
-                                                        <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                                                            {seguimiento.titulo}
-                                                        </h3>
-                                                        {seguimiento.descripcion && (
-                                                            <p className="text-sm text-gray-600 truncate">
-                                                                {seguimiento.descripcion}
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="col-span-2">
-                                                        <div className="font-medium text-gray-900 truncate">
-                                                            {seguimiento.cliente.nombre} {seguimiento.cliente.apellido}
+                                                    {/* Columna Seguimiento */}
+                                                    <div className="col-span-3 lg:col-span-3 flex items-center gap-3">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                            seguimiento.completado 
+                                                                ? 'bg-[#059669]' 
+                                                                : new Date(seguimiento.fecha_seguimiento) < new Date() 
+                                                                ? 'bg-[#DC2626]' 
+                                                                : 'bg-[#FF6B35]'
+                                                        }`}>
+                                                            {seguimiento.completado ? (
+                                                                <CheckCircle className="h-5 w-5 text-white" />
+                                                            ) : (
+                                                                <Clock className="h-5 w-5 text-white" />
+                                                            )}
                                                         </div>
-                                                        {seguimiento.cliente.empresa && (
-                                                            <p className="text-sm text-gray-500 mt-1 truncate">
-                                                                {seguimiento.cliente.empresa}
-                                                            </p>
-                                                        )}
+                                                        <div className="min-w-0 flex-1">
+                                                            <h3 className="text-base font-bold text-[#333] truncate">
+                                                                {seguimiento.titulo}
+                                                            </h3>
+                                                            {seguimiento.descripcion && (
+                                                                <p className="text-sm text-[#666] truncate">
+                                                                    {seguimiento.descripcion}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
 
-                                                    <div className="col-span-2">
-                                                        <div className="space-y-1">
-                                                            <p className={`text-sm font-semibold ${
-                                                                dateInfo.variant === 'overdue' ? 'text-slate-700' :
-                                                                dateInfo.variant === 'today' ? 'text-slate-700' :
-                                                                dateInfo.variant === 'tomorrow' ? 'text-slate-700' :
-                                                                'text-slate-700'
+                                                    {/* Columna Cliente */}
+                                                    <div className="hidden lg:block lg:col-span-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                            <div>
+                                                                <p className="text-sm text-[#666] truncate font-medium">
+                                                                    {seguimiento.cliente.nombre} {seguimiento.cliente.apellido}
+                                                                </p>
+                                                                {seguimiento.cliente.empresa && (
+                                                                    <div className="flex items-center gap-1 mt-1">
+                                                                        <Building className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                                        <p className="text-xs text-[#666] truncate">
+                                                                            {seguimiento.cliente.empresa}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Columna Fecha */}
+                                                    <div className="hidden md:block md:col-span-2">
+                                                        <div>
+                                                            <span className={`text-sm font-medium ${
+                                                                dateInfo.variant === 'overdue' ? 'text-red-600' :
+                                                                dateInfo.variant === 'today' ? 'text-amber-600' :
+                                                                dateInfo.variant === 'tomorrow' ? 'text-blue-600' :
+                                                                'text-[#666]'
                                                             }`}>
                                                                 {dateInfo.text}
-                                                            </p>
-                                                            <p className="text-xs text-slate-500">
+                                                            </span>
+                                                            <p className="text-xs text-[#666] mt-1">
                                                                 {new Date(seguimiento.fecha_seguimiento).toLocaleDateString('es-ES', {
-                                                                    weekday: 'short',
                                                                     day: 'numeric',
                                                                     month: 'short'
                                                                 })}
@@ -541,64 +646,58 @@ export default function Index({ seguimientos, filtros }: Props) {
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-span-1 flex justify-center">
-                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${tipoConfig.bg}`}>
-                                                            <tipoConfig.icon className={`h-3 w-3 ${tipoConfig.color}`} />
-                                                            <span className={`text-xs font-semibold ${tipoConfig.color}`}>
-                                                                {tipoConfig.label}
-                                                            </span>
+                                                    {/* Columna Tipo */}
+                                                    <div className="col-span-2 lg:col-span-1">
+                                                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-medium ${tipoConfig.bg} ${tipoConfig.color}`}>
+                                                            <tipoConfig.icon className="h-3 w-3" />
+                                                            {tipoConfig.label}
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-span-1 flex justify-center">
-                                                        <div className={`inline-flex items-center px-2 py-1 rounded-full ${prioridadConfig.bg}`}>
-                                                            <span className={`text-xs font-semibold ${prioridadConfig.color}`}>
-                                                                {prioridadConfig.label}
-                                                            </span>
+                                                    {/* Columna Prioridad */}
+                                                    <div className="hidden lg:block lg:col-span-1">
+                                                        <div className={`inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium ${prioridadConfig.bg} ${prioridadConfig.color}`}>
+                                                            {prioridadConfig.label}
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-span-3 flex justify-center gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => router.visit(`/clientes/${seguimiento.cliente_id}`)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
-                                                            title="Ver cliente"
-                                                        >
-                                                            <Eye className="h-3 w-3" />
-                                                        </Button>
+                                                    {/* Columna Acciones */}
+                                                    <div className="col-span-7 lg:col-span-3 flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <Link href={`/clientes/${seguimiento.cliente_id}`}>
+                                                            <button
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                                title="Ver cliente"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </button>
+                                                        </Link>
 
                                                         {!seguimiento.completado && (
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
+                                                            <button
                                                                 onClick={() => handleComplete(seguimiento.id)}
-                                                                className="h-8 w-8 p-0 border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400"
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
                                                                 title="Marcar como completado"
                                                             >
-                                                                <CheckCircle className="h-3 w-3" />
-                                                            </Button>
+                                                                <CheckCircle className="h-4 w-4" />
+                                                            </button>
                                                         )}
 
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
+                                                        <button
                                                             onClick={() => handleDelete(seguimiento.id)}
-                                                            className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
-                                                            title="Eliminar"
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                            title="Eliminar seguimiento"
                                                         >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                            </>
+                        )}
+                    </div>
 
                     {/* Pagination */}
                     {seguimientos.last_page > 1 && (

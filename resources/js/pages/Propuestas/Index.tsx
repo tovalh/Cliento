@@ -357,15 +357,6 @@ export default function Index({ propuestas, filtros, estadisticas }: Props) {
                                     />
                                 </div>
 
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setActiveFilters(!activeFilters)}
-                                    className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm"
-                                >
-                                    <Filter className="mr-2 h-4 w-4" />
-                                    Filtros
-                                </Button>
-
                                 {/* Botón Nueva Propuesta */}
                                 <Link href="/propuestas/create">
                                     <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">

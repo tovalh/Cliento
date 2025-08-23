@@ -25,12 +25,19 @@ import {
     ArrowUpDown,
     ChevronUp,
     ChevronDown,
+    ChevronsUpDown,
     Building2,
     ListTodo,
     Target,
-    Timer
+    Timer,
+    Plus,
+    Pencil,
+    Building
 } from 'lucide-react';
 import { useState } from 'react';
+
+type SortField = 'nombre' | 'cliente' | 'estado' | 'precio_total' | 'fecha_entrega' | 'created_at';
+type SortOrder = 'asc' | 'desc';
 
 // Types
 interface Cliente {
@@ -148,20 +155,43 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
         direccion: filtros.direccion || 'desc',
     });
 
+    const [sortField, setSortField] = useState<SortField | null>(filtros?.orden as SortField || null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(filtros?.direccion as SortOrder || 'asc');
+
     const handleFilter = () => {
         router.get('/proyectos', data, { preserveState: true });
     };
 
-    const handleSort = (campo: string) => {
-        const newDirection = data.orden === campo && data.direccion === 'asc' ? 'desc' : 'asc';
-        setData({
-            ...data,
-            orden: campo,
-            direccion: newDirection
+    const handleSort = (field: SortField) => {
+        let newOrder: SortOrder = 'asc';
+
+        if (sortField === field) {
+            newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        }
+
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        router.get('/proyectos', {
+            buscar: data.buscar,
+            estado: data.estado,
+            cliente: data.cliente,
+            orden: field,
+            direccion: newOrder,
+        }, {
+            preserveState: true,
+            preserveScroll: true
         });
-        router.get('/proyectos', { ...data, orden: campo, direccion: newDirection }, { 
-            preserveState: true
-        });
+    };
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) {
+            return <ChevronsUpDown className="ml-1 h-3 w-3 text-gray-400" />;
+        }
+
+        return sortOrder === 'asc'
+            ? <ChevronUp className="ml-1 h-3 w-3 text-[#FF6B35]" />
+            : <ChevronDown className="ml-1 h-3 w-3 text-[#FF6B35]" />;
     };
 
     const handleDelete = (id: number) => {
@@ -252,50 +282,60 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
         return configs[estado as keyof typeof configs] || configs.por_empezar;
     };
 
-    const SortButton = ({ campo, children }: { campo: string; children: React.ReactNode }) => (
-        <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleSort(campo)}
-            className="h-auto p-1 font-medium text-gray-600 hover:text-gray-900"
-        >
-            {children}
-            <ArrowUpDown className="ml-1 h-3 w-3" />
-            {data.orden === campo && (
-                data.direccion === 'asc' ? 
-                <ChevronUp className="ml-1 h-3 w-3 text-blue-600" /> : 
-                <ChevronDown className="ml-1 h-3 w-3 text-blue-600" />
-            )}
-        </Button>
-    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Proyectos" />
-            
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50/30 p-8">
-                <div className="mx-auto max-w-7xl space-y-8">
-                    {/* Header Section */}
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                            <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-                                Proyectos
-                            </h1>
-                            <p className="text-lg text-gray-600">
-                                Gestiona y supervisa todos tus proyectos activos
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="outline"
-                                onClick={() => setActiveFilters(!activeFilters)}
-                                className="bg-white shadow-sm hover:shadow-md transition-all"
-                            >
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filtros
-                            </Button>
+
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Header naranja */}
+                <div className="bg-[#FF6B35]">
+                    <div className="mx-auto px-8 py-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-[28px] font-bold text-white">
+                                    Proyectos
+                                </h1>
+                                <p className="text-white text-base opacity-90 mt-1">
+                                    Gestiona y supervisa todos tus proyectos activos
+                                </p>
+                            </div>
+
+                            <div className="flex items-center space-x-4">
+                                {/* Barra de búsqueda */}
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Buscar proyectos..."
+                                        value={data.buscar}
+                                        onChange={(e) => setData('buscar', e.target.value)}
+                                        onBlur={() => {
+                                            handleFilter();
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                handleFilter();
+                                            }
+                                        }}
+                                        className="pl-10 w-[300px] bg-white border-0"
+                                    />
+                                </div>
+
+                                {/* Botón Nuevo Proyecto */}
+                                <Link href="/proyectos/create">
+                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nuevo Proyecto
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Contenido principal */}
+                <div className="mx-auto p-6 space-y-8">
 
                     {/* Statistics Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -448,188 +488,266 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
                         </Card>
                     )}
 
-                    {/* Main Content */}
-                    <Card className="bg-white shadow-lg border-0 overflow-hidden">
-                        <CardHeader className="bg-gray-50 border-b border-gray-200">
-                            <div className="grid grid-cols-12 gap-4 items-center text-sm font-semibold text-gray-600">
-                                <div className="col-span-3">
-                                    <SortButton campo="nombre">PROYECTO</SortButton>
+                    {/* Tabla de proyectos */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {proyectos.data.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="text-gray-400 mb-4">
+                                    <Search className="h-16 w-16 mx-auto" />
                                 </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="cliente">CLIENTE</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="estado">ESTADO</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="precio_total">VALOR</SortButton>
-                                </div>
-                                <div className="col-span-2">
-                                    <SortButton campo="fecha_entrega">FECHA ENTREGA</SortButton>
-                                </div>
-                                <div className="col-span-1">
-                                    <SortButton campo="created_at">CREACIÓN</SortButton>
-                                </div>
-                                <div className="col-span-2 text-center">ACCIONES</div>
+                                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                                    No se encontraron proyectos
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {data.buscar
+                                        ? 'Ajusta la búsqueda o agrega nuevos proyectos.'
+                                        : 'Los proyectos se crean desde propuestas aprobadas.'
+                                    }
+                                </p>
+                                <Link href="/propuestas">
+                                    <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white hover:text-white transition-colors cursor-pointer">
+                                        <FolderOpen className="mr-2 h-4 w-4 text-white" />
+                                        Ver Propuestas
+                                    </Button>
+                                </Link>
                             </div>
-                        </CardHeader>
-
-                        <CardContent className="p-0">
-                            {proyectos.data.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                                        No se encontraron proyectos
-                                    </h3>
-                                    <p className="text-gray-500 mb-4">
-                                        Los proyectos se crean automáticamente desde propuestas aprobadas.
-                                    </p>
-                                    <Link href="/propuestas">
-                                        <Button>
-                                            Ver Propuestas
-                                        </Button>
-                                    </Link>
+                        ) : (
+                            <>
+                                {/* Header de tabla */}
+                                <div className="bg-[#E5E7EB] px-5 py-4 border-b border-[#E5E7EB]">
+                                    <div className="grid grid-cols-12 gap-4 items-center">
+                                        <div className="col-span-3 lg:col-span-3">
+                                            <button
+                                                onClick={() => handleSort('nombre')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                PROYECTO
+                                                {getSortIcon('nombre')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('cliente')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                CLIENTE
+                                                {getSortIcon('cliente')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('estado')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                ESTADO
+                                                {getSortIcon('estado')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden md:block md:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('precio_total')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                VALOR
+                                                {getSortIcon('precio_total')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <button
+                                                onClick={() => handleSort('fecha_entrega')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                FECHA ENTREGA
+                                                {getSortIcon('fecha_entrega')}
+                                            </button>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-1">
+                                            <button
+                                                onClick={() => handleSort('created_at')}
+                                                className="flex items-center text-[#333] font-semibold text-sm hover:text-[#FF6B35] transition-colors cursor-pointer"
+                                            >
+                                                CREACIÓN
+                                                {getSortIcon('created_at')}
+                                            </button>
+                                        </div>
+                                        <div className="col-span-7 lg:col-span-2 text-right">
+                                            <span className="text-[#333] font-semibold text-sm">ACCIONES</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="divide-y divide-gray-100">
-                                    {proyectos.data.map((proyecto) => {
+
+                                {/* Filas de datos */}
+                                <div>
+                                    {proyectos.data.map((proyecto, index) => {
                                         const estadoConfig = getEstadoConfig(proyecto.estado);
                                         
                                         return (
-                                            <div 
-                                                key={proyecto.id} 
-                                                className="p-6 hover:bg-gray-50 transition-all duration-200"
+                                            <div
+                                                key={proyecto.id}
+                                                className={`px-5 py-5 border-b border-[#E5E7EB] hover:bg-[#F1F5F9] cursor-pointer transition-colors ${
+                                                    index % 2 === 0 ? 'bg-[#F8F9FA]' : 'bg-[#FFFFFF]'
+                                                }`}
+                                                onClick={() => router.visit(`/proyectos/${proyecto.id}`)}
                                             >
                                                 <div className="grid grid-cols-12 gap-4 items-center">
-                                                    <div className="col-span-3">
-                                                        <h3 className="font-semibold text-gray-900 mb-1">
-                                                            {proyecto.nombre}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600 line-clamp-2">
-                                                            {proyecto.descripcion}
-                                                        </p>
-                                                        {proyecto.progreso !== undefined && (
-                                                            <div className="mt-2">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                                                        <div 
-                                                                            className="bg-blue-600 h-2 rounded-full transition-all"
-                                                                            style={{ width: `${proyecto.progreso}%` }}
-                                                                        ></div>
-                                                                    </div>
-                                                                    <span className="text-xs text-gray-500">{proyecto.progreso}%</span>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="col-span-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <User className="h-4 w-4 text-gray-400" />
-                                                            <span className="font-medium text-gray-900">
-                                                                {proyecto.cliente.nombre} {proyecto.cliente.apellido}
-                                                            </span>
+                                                    {/* Columna Proyecto */}
+                                                    <div className="col-span-3 lg:col-span-3 flex items-center gap-3">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                            proyecto.estado === 'completado' 
+                                                                ? 'bg-[#059669]' 
+                                                                : proyecto.estado === 'en_progreso'
+                                                                ? 'bg-[#0284C7]'
+                                                                : proyecto.estado === 'en_pausa'
+                                                                ? 'bg-[#D97706]'
+                                                                : 'bg-[#FF6B35]'
+                                                        }`}>
+                                                            {proyecto.estado === 'completado' ? (
+                                                                <CheckCircle className="h-5 w-5 text-white" />
+                                                            ) : proyecto.estado === 'en_progreso' ? (
+                                                                <Rocket className="h-5 w-5 text-white" />
+                                                            ) : proyecto.estado === 'en_pausa' ? (
+                                                                <Pause className="h-5 w-5 text-white" />
+                                                            ) : (
+                                                                <FolderOpen className="h-5 w-5 text-white" />
+                                                            )}
                                                         </div>
-                                                        {proyecto.cliente.empresa && (
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Building2 className="h-3 w-3 text-gray-400" />
-                                                                <p className="text-sm text-gray-500">
-                                                                    {proyecto.cliente.empresa}
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="col-span-1">
-                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${estadoConfig.bg}`}>
-                                                            <span className="text-sm">
-                                                                {estadoConfig.emoji}
-                                                            </span>
-                                                            <span className={`text-xs font-medium ${estadoConfig.color}`}>
-                                                                {estadoConfig.label}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="col-span-1">
-                                                        <p className="font-bold text-green-600">
-                                                            {formatPrice(proyecto.precio_total)}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="col-span-2">
-                                                        <div className="space-y-1">
-                                                            <p className="text-sm font-medium text-gray-700">
-                                                                {formatDate(proyecto.fecha_entrega)}
+                                                        <div className="min-w-0 flex-1">
+                                                            <h3 className="text-base font-bold text-[#333] truncate">
+                                                                {proyecto.nombre}
+                                                            </h3>
+                                                            <p className="text-sm text-[#666] truncate">
+                                                                {proyecto.descripcion}
                                                             </p>
-                                                            {proyecto.fecha_entrega && new Date(proyecto.fecha_entrega) < new Date() && proyecto.estado !== 'completado' && (
-                                                                <span className="text-xs text-red-600 font-medium">
-                                                                    ⚠️ Vencido
-                                                                </span>
+                                                            {proyecto.progreso !== undefined && (
+                                                                <div className="mt-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                                                            <div 
+                                                                                className="bg-[#FF6B35] h-1.5 rounded-full transition-all"
+                                                                                style={{ width: `${proyecto.progreso}%` }}
+                                                                            ></div>
+                                                                        </div>
+                                                                        <span className="text-xs text-gray-500">{proyecto.progreso}%</span>
+                                                                    </div>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
 
-                                                    <div className="col-span-1">
-                                                        <p className="text-sm text-gray-500">
-                                                            {formatDate(proyecto.created_at)}
-                                                        </p>
+                                                    {/* Columna Cliente */}
+                                                    <div className="hidden lg:block lg:col-span-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                            <div>
+                                                                <p className="text-sm text-[#666] truncate font-medium">
+                                                                    {proyecto.cliente.nombre} {proyecto.cliente.apellido}
+                                                                </p>
+                                                                {proyecto.cliente.empresa && (
+                                                                    <div className="flex items-center gap-1 mt-1">
+                                                                        <Building className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                                        <p className="text-xs text-[#666] truncate">
+                                                                            {proyecto.cliente.empresa}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    <div className="col-span-2 flex justify-center gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => router.visit(`/proyectos/${proyecto.id}`)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-purple-50 hover:border-purple-300"
-                                                            title="Ver proyecto"
-                                                        >
-                                                            <Eye className="h-3 w-3" />
-                                                        </Button>
-                                                        
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => router.visit(`/proyectos/${proyecto.id}/edit`)}
-                                                            className="h-8 w-8 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
-                                                            title="Editar proyecto"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                        </Button>
-                                                        
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
+                                                    {/* Columna Estado */}
+                                                    <div className="col-span-2 lg:col-span-1">
+                                                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-medium ${
+                                                            proyecto.estado === 'completado'
+                                                                ? "bg-[#059669] text-white hover:bg-[#059669]"
+                                                                : proyecto.estado === 'en_progreso'
+                                                                ? "bg-[#0284C7] text-white hover:bg-[#0284C7]"
+                                                                : proyecto.estado === 'en_pausa'
+                                                                ? "bg-[#D97706] text-white hover:bg-[#D97706]"
+                                                                : "bg-[#6B7280] text-white hover:bg-[#6B7280]"
+                                                        }`}>
+                                                            {estadoConfig.emoji} {estadoConfig.label}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Columna Valor */}
+                                                    <div className="hidden md:block md:col-span-1">
+                                                        <span className="text-sm text-[#059669] font-bold block">
+                                                            {formatPrice(proyecto.precio_total)}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Columna Fecha Entrega */}
+                                                    <div className="hidden lg:block lg:col-span-2">
+                                                        <div>
+                                                            <span className="text-[13px] text-[#666]">
+                                                                {formatDate(proyecto.fecha_entrega)}
+                                                            </span>
+                                                            {proyecto.fecha_entrega && new Date(proyecto.fecha_entrega) < new Date() && proyecto.estado !== 'completado' && (
+                                                                <div className="text-xs text-red-600 font-medium mt-1">
+                                                                    ⚠️ Vencido
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Columna Creación */}
+                                                    <div className="hidden lg:block lg:col-span-1">
+                                                        <span className="text-[13px] text-[#666]">
+                                                            {formatDate(proyecto.created_at)}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Columna Acciones */}
+                                                    <div className="col-span-7 lg:col-span-2 flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <Link href={`/proyectos/${proyecto.id}`}>
+                                                            <button
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                                title="Ver proyecto"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </button>
+                                                        </Link>
+
+                                                        <Link href={`/proyectos/${proyecto.id}/edit`}>
+                                                            <button
+                                                                className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                                title="Editar proyecto"
+                                                            >
+                                                                <Pencil className="h-4 w-4" />
+                                                            </button>
+                                                        </Link>
+
+                                                        <button
                                                             onClick={() => handleDelete(proyecto.id)}
-                                                            className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
                                                             title="Eliminar proyecto"
                                                         >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                            </>
+                        )}
+                    </div>
 
-                    {/* Pagination */}
+                    {/* Paginación */}
                     {proyectos.last_page > 1 && (
-                        <div className="flex justify-center">
-                            <div className="flex items-center gap-2 bg-white rounded-lg shadow-md p-2">
-                                {proyectos.links.map((link, index) => (
-                                    <Button
-                                        key={index}
-                                        variant={link.active ? "default" : "ghost"}
-                                        size="sm"
-                                        onClick={() => link.url && router.visit(link.url)}
-                                        disabled={!link.url}
-                                        className={link.active ? "bg-purple-600 hover:bg-purple-700" : ""}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
+                        <div className="flex justify-center mt-6">
+                            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-2">
+                                {Array.from({ length: proyectos.last_page }, (_, i) => i + 1).map((page) => (
+                                    <Link key={page} href={`/proyectos?page=${page}`}>
+                                        <Button
+                                            variant={page === proyectos.current_page ? "default" : "ghost"}
+                                            size="sm"
+                                            className={page === proyectos.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
+                                        >
+                                            {page}
+                                        </Button>
+                                    </Link>
                                 ))}
                             </div>
                         </div>
