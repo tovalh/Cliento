@@ -300,7 +300,7 @@ export default function Index({ seguimientos, filtros }: Props) {
                     </div>
 
                     {/* Statistics Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <Card className="bg-card border shadow-sm hover:shadow-md transition-all">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
@@ -314,7 +314,7 @@ export default function Index({ seguimientos, filtros }: Props) {
                         </Card>
 
 
-                        <Card className="bg-card border shadow-sm hover:shadow-md transition-all">
+      {/*                  <Card className="bg-card border shadow-sm hover:shadow-md transition-all">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -324,7 +324,7 @@ export default function Index({ seguimientos, filtros }: Props) {
                                     <Calendar className="h-8 w-8 text-warning" />
                                 </div>
                             </CardContent>
-                        </Card>
+                        </Card>*/}
 
                         <Card className="bg-card border shadow-sm hover:shadow-md transition-all">
                             <CardContent className="p-6">

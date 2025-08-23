@@ -1,10 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Cliente } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Mail, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Eye, Pencil, Plus, Trash2, Search, Building } from 'lucide-react';
+import { useState } from 'react';
 
 interface Props {
     clientes: {
@@ -13,6 +15,10 @@ interface Props {
         last_page: number;
         per_page: number;
         total: number;
+    };
+    filtros?: {
+        buscar?: string;
+        estado?: string;
     };
 }
 
@@ -27,7 +33,52 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({ clientes }: Props) {
+export default function Index({ clientes, filtros }: Props) {
+    const { data, setData } = useForm({
+        buscar: filtros?.buscar || '',
+        estado: filtros?.estado || 'todos',
+    });
+
+    // Generar iniciales para avatar
+    const getInitials = (nombre: string, apellido: string) => {
+        return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
+    };
+
+    // Formatear fecha de último contacto
+    const getLastContactText = (fecha: string) => {
+        const date = new Date(fecha);
+        const today = new Date();
+        const diffInDays = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffInDays === 0) return 'Hoy';
+        if (diffInDays === 1) return 'Ayer';
+        if (diffInDays < 7) return `Hace ${diffInDays} días`;
+        if (diffInDays < 30) return `Hace ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`;
+        return `Hace ${Math.floor(diffInDays / 30)} mes${Math.floor(diffInDays / 30) > 1 ? 'es' : ''}`;
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get('/clientes', {
+            buscar: data.buscar,
+            estado: data.estado
+        }, {
+            preserveState: true,
+            preserveScroll: true
+        });
+    };
+
+    const handleFilterChange = (value: string) => {
+        setData('estado', value);
+        router.get('/clientes', {
+            buscar: data.buscar,
+            estado: value
+        }, {
+            preserveState: true,
+            preserveScroll: true
+        });
+    };
+
     const handleDelete = (id: number) => {
         if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
             router.delete(`/clientes/${id}`);
@@ -37,111 +88,256 @@ export default function Index({ clientes }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Clientes" />
-            
-            <div className="flex h-full flex-1 flex-col gap-6 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Clientes</h1>
-                        <p className="text-muted-foreground">
-                            Gestiona la información de tus clientes
-                        </p>
+
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Header naranja */}
+                <div className="bg-[#FF6B35]">
+                    <div className="max-w-7xl mx-auto px-8 py-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-[28px] font-bold text-white">
+                                    Clientes
+                                </h1>
+                                <p className="text-white text-base opacity-90 mt-1">
+                                    Gestiona la información de tus clientes
+                                </p>
+                            </div>
+
+                            <div className="flex items-center space-x-4">
+                                {/* Barra de búsqueda */}
+                                <form onSubmit={handleSearch} className="flex">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input
+                                            type="text"
+                                            placeholder="Buscar clientes..."
+                                            value={data.buscar}
+                                            onChange={(e) => setData('buscar', e.target.value)}
+                                            onBlur={() => {
+                                                router.get('/clientes', {
+                                                    buscar: data.buscar,
+                                                    estado: data.estado
+                                                }, {
+                                                    preserveState: true,
+                                                    preserveScroll: true
+                                                });
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleSearch(e);
+                                                }
+                                            }}
+                                            className="pl-10 w-[300px] bg-white border-0"
+                                        />
+                                    </div>
+                                </form>
+
+                                {/* Filtros dropdown */}
+                                <Select
+                                    value={data.estado}
+                                    onValueChange={handleFilterChange}
+                                >
+                                    <SelectTrigger className="w-40 bg-white border-0 text-gray-600">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                                        <SelectItem value="todos" className="hover:bg-gray-100 cursor-pointer">Todos</SelectItem>
+                                        <SelectItem value="activo" className="hover:bg-gray-100 cursor-pointer">Activos</SelectItem>
+                                        <SelectItem value="inactivo" className="hover:bg-gray-100 cursor-pointer">Inactivos</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Botón Nuevo Cliente */}
+                                <Link href="/clientes/create">
+                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Nuevo Cliente
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
-                    <Link href="/clientes/create">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Cliente
-                        </Button>
-                    </Link>
                 </div>
 
-                <div className="grid gap-4">
-                    {clientes.data.length === 0 ? (
-                        <Card className="p-8 text-center">
-                            <p className="text-muted-foreground">No hay clientes registrados</p>
-                            <Link href="/clientes/create" className="mt-4 inline-block">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Crear primer cliente
-                                </Button>
-                            </Link>
-                        </Card>
-                    ) : (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {clientes.data.map((cliente) => (
-                                <Card key={cliente.id} className="p-6 cursor-pointer hover:shadow-md transition-shadow">
-                                    <Link href={`/clientes/${cliente.id}`} className="block">
-                                        <div className="flex items-start justify-between">
-                                            <div className="space-y-2 flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold">
-                                                        {cliente.nombre} {cliente.apellido}
-                                                    </h3>
-                                                    <Badge 
-                                                        variant={cliente.estado === 'activo' ? 'default' : 'secondary'}
+                {/* Contenido principal */}
+                <div className=" mx-auto p-6">
+                    {/* Tabla de clientes */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {clientes.data.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="text-gray-400 mb-4">
+                                    <Search className="h-16 w-16 mx-auto" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                                    No se encontraron clientes
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {data.buscar || data.estado !== 'todos'
+                                        ? 'Ajusta los filtros o agrega nuevos clientes.'
+                                        : 'Comienza agregando tu primer cliente.'
+                                    }
+                                </p>
+                                <Link href="/clientes/create">
+                                    <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white hover:text-white transition-colors cursor-pointer">
+                                        <Plus className="mr-2 h-4 w-4 text-white" />
+                                        Crear primer cliente
+                                    </Button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Header de tabla */}
+                                <div className="bg-[#E5E7EB] px-5 py-4 border-b border-[#E5E7EB]">
+                                    <div className="grid grid-cols-12 gap-4 items-center">
+                                        <div className="col-span-4 lg:col-span-3">
+                                            <span className="text-[#333] font-semibold text-sm">CLIENTE</span>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <span className="text-[#333] font-semibold text-sm">EMPRESA</span>
+                                        </div>
+                                        <div className="hidden md:block md:col-span-3">
+                                            <span className="text-[#333] font-semibold text-sm">EMAIL</span>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-1">
+                                            <span className="text-[#333] font-semibold text-sm">ESTADO</span>
+                                        </div>
+                                        <div className="hidden lg:block lg:col-span-2">
+                                            <span className="text-[#333] font-semibold text-sm">ÚLTIMO CONTACTO</span>
+                                        </div>
+                                        <div className="col-span-6 lg:col-span-1 text-right">
+                                            <span className="text-[#333] font-semibold text-sm">ACCIONES</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Filas de datos */}
+                                <div>
+                                    {clientes.data.map((cliente, index) => (
+                                        <div
+                                            key={cliente.id}
+                                            className={`px-5 py-5 border-b border-[#E5E7EB] hover:bg-[#F1F5F9] cursor-pointer transition-colors ${
+                                                index % 2 === 0 ? 'bg-[#F8F9FA]' : 'bg-[#FFFFFF]'
+                                            }`}
+                                            onClick={() => router.visit(`/clientes/${cliente.id}`)}
+                                        >
+                                            <div className="grid grid-cols-12 gap-4 items-center">
+                                                {/* Columna Cliente */}
+                                                <div className="col-span-4 lg:col-span-3 flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-[#FF6B35] rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <span className="text-white font-semibold text-sm">
+                                                            {getInitials(cliente.nombre, cliente.apellido)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <h3 className="text-base font-bold text-[#333] truncate">
+                                                            {cliente.nombre} {cliente.apellido}
+                                                        </h3>
+                                                        <div className="lg:hidden">
+                                                            {cliente.empresa && (
+                                                                <p className="text-sm text-[#666] truncate">
+                                                                    {cliente.empresa}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Columna Empresa */}
+                                                <div className="hidden lg:block lg:col-span-2">
+                                                    {cliente.empresa ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Building className="h-3 w-3 text-[#666] flex-shrink-0" />
+                                                            <span className="text-sm text-[#666] truncate">
+                                                                {cliente.empresa}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm text-[#666]">-</span>
+                                                    )}
+                                                </div>
+
+                                                {/* Columna Email */}
+                                                <div className="hidden md:block md:col-span-3">
+                                                    <span className="text-sm text-[#666] block">
+                                                        {cliente.email}
+                                                    </span>
+                                                </div>
+
+                                                {/* Columna Estado */}
+                                                <div className="col-span-2 lg:col-span-1">
+                                                    <Badge
+                                                        className={`rounded-xl px-3 py-1 text-xs font-medium ${
+                                                            cliente.estado === 'activo'
+                                                                ? "bg-[#059669] text-white hover:bg-[#059669]"
+                                                                : "bg-[#6B7280] text-white hover:bg-[#6B7280]"
+                                                        }`}
                                                     >
-                                                        {cliente.estado}
+                                                        {cliente.estado === 'activo' ? 'Activo' : 'Inactivo'}
                                                     </Badge>
                                                 </div>
-                                                
-                                                <div className="space-y-1 text-sm text-muted-foreground">
-                                                    <div className="flex items-center gap-2">
-                                                        <Mail className="h-3 w-3" />
-                                                        {cliente.email}
-                                                    </div>
-                                                    {cliente.empresa && (
-                                                        <p>📍 {cliente.empresa}</p>
-                                                    )}
-                                                    {cliente.telefono && (
-                                                        <p>📞 {cliente.telefono}</p>
-                                                    )}
+
+                                                {/* Columna Último contacto */}
+                                                <div className="hidden lg:block lg:col-span-2">
+                                                    <span className="text-[13px] text-[#666]">
+                                                        {getLastContactText(cliente.created_at)}
+                                                    </span>
+                                                </div>
+
+                                                {/* Columna Acciones */}
+                                                <div className="col-span-6 lg:col-span-1 flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                                                    <Link href={`/clientes/${cliente.id}`}>
+                                                        <button
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                            title="Ver cliente"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </button>
+                                                    </Link>
+
+                                                    <Link href={`/clientes/${cliente.id}/edit`}>
+                                                        <button
+                                                            className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                            title="Editar cliente"
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </button>
+                                                    </Link>
+
+                                                    <button
+                                                        onClick={() => handleDelete(cliente.id)}
+                                                        className="p-1 text-[#666] hover:text-[#FF6B35] transition-colors"
+                                                        title="Eliminar cliente"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </Link>
-                                    
-                                    <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-                                        <Link href={`/clientes/${cliente.id}`}>
-                                            <Button variant="outline" size="sm">
-                                                <Eye className="h-3 w-3" />
-                                            </Button>
-                                        </Link>
-                                        <Link href={`/clientes/${cliente.id}/edit`}>
-                                            <Button variant="outline" size="sm">
-                                                <Pencil className="h-3 w-3" />
-                                            </Button>
-                                        </Link>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(cliente.id);
-                                            }}
-                                            className="text-red-600 hover:text-red-700"
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Paginación */}
+                    {clientes.last_page > 1 && (
+                        <div className="flex justify-center mt-6">
+                            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-2">
+                                {Array.from({ length: clientes.last_page }, (_, i) => i + 1).map((page) => (
+                                    <Link key={page} href={`/clientes?page=${page}`}>
+                                        <Button
+                                            variant={page === clientes.current_page ? "default" : "ghost"}
+                                            size="sm"
+                                            className={page === clientes.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
                                         >
-                                            <Trash2 className="h-3 w-3" />
+                                            {page}
                                         </Button>
-                                    </div>
-                                </Card>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
-
-                {clientes.last_page > 1 && (
-                    <div className="flex justify-center gap-2">
-                        {Array.from({ length: clientes.last_page }, (_, i) => i + 1).map((page) => (
-                            <Link key={page} href={`/clientes?page=${page}`}>
-                                <Button 
-                                    variant={page === clientes.current_page ? "default" : "outline"}
-                                    size="sm"
-                                >
-                                    {page}
-                                </Button>
-                            </Link>
-                        ))}
-                    </div>
-                )}
             </div>
         </AppLayout>
     );

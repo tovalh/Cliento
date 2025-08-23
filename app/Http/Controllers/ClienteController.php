@@ -12,12 +12,34 @@ class ClienteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clientes = Cliente::orderBy('created_at', 'desc')->paginate(10);
+        $query = Cliente::query();
+
+        // Filtro de búsqueda
+        if ($request->filled('buscar')) {
+            $buscar = $request->get('buscar');
+            $query->where(function($q) use ($buscar) {
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('apellido', 'like', "%{$buscar}%")
+                  ->orWhere('email', 'like', "%{$buscar}%")
+                  ->orWhere('empresa', 'like', "%{$buscar}%");
+            });
+        }
+
+        // Filtro de estado
+        if ($request->filled('estado') && $request->get('estado') !== 'todos') {
+            $query->where('estado', $request->get('estado'));
+        }
+
+        $clientes = $query->orderBy('created_at', 'desc')->paginate(10);
         
         return Inertia::render('Clientes/Index', [
-            'clientes' => $clientes
+            'clientes' => $clientes,
+            'filtros' => [
+                'buscar' => $request->get('buscar'),
+                'estado' => $request->get('estado', 'todos')
+            ]
         ]);
     }
 
