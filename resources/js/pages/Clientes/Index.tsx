@@ -118,68 +118,66 @@ export default function Index({ clientes, filtros }: Props) {
             <Head title="Clientes" />
 
             <div className="min-h-screen bg-[#F8F9FA]">
-                {/* Header naranja */}
-                <div className="bg-[#FF6B35]">
-                    <div className="mx-auto px-8 py-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-[28px] font-bold text-white">
-                                    Clientes
-                                </h1>
-                                <p className="text-white text-base opacity-90 mt-1">
-                                    Gestiona la información de tus clientes
-                                </p>
-                            </div>
-
-                            <div className="flex items-center space-x-4">
-                                {/* Barra de búsqueda */}
-                                <form onSubmit={handleSearch} className="flex">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                        <Input
-                                            type="text"
-                                            placeholder="Buscar clientes..."
-                                            value={data.buscar}
-                                            onChange={(e) => setData('buscar', e.target.value)}
-                                            onBlur={() => {
-                                                router.get('/clientes', {
-                                                    buscar: data.buscar,
-                                                    sort_field: sortField,
-                                                    sort_order: sortOrder,
-                                                }, {
-                                                    preserveState: true,
-                                                    preserveScroll: true
-                                                });
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleSearch(e);
-                                                }
-                                            }}
-                                            className="pl-10 w-[300px] bg-white border-0"
-                                        />
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-[28px] font-bold text-white">
+                                            Clientes
+                                        </h1>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Gestiona la información de tus clientes
+                                        </p>
                                     </div>
-                                </form>
 
+                                    <div className="flex items-center space-x-4">
+                                        {/* Barra de búsqueda */}
+                                        <form onSubmit={handleSearch} className="flex">
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                <Input
+                                                    type="text"
+                                                    placeholder="Buscar clientes..."
+                                                    value={data.buscar}
+                                                    onChange={(e) => setData('buscar', e.target.value)}
+                                                    onBlur={() => {
+                                                        router.get('/clientes', {
+                                                            buscar: data.buscar,
+                                                            sort_field: sortField,
+                                                            sort_order: sortOrder,
+                                                        }, {
+                                                            preserveState: true,
+                                                            preserveScroll: true
+                                                        });
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleSearch(e);
+                                                        }
+                                                    }}
+                                                    className="pl-10 w-[300px] bg-white border-0"
+                                                />
+                                            </div>
+                                        </form>
 
-                                {/* Botón Nuevo Cliente */}
-                                <Link href="/clientes/create">
-                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Nuevo Cliente
-                                    </Button>
-                                </Link>
+                                        {/* Botón Nuevo Cliente */}
+                                        <Link href="/clientes/create">
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Nuevo Cliente
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-
-
-                {/* Contenido principal */}
-                <div className=" mx-auto p-6">
-                    {/* Tabla de clientes */}
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Contenido de la tabla */}
                         {clientes.data.length === 0 ? (
                             <div className="text-center py-16">
                                 <div className="text-gray-400 mb-4">
@@ -364,28 +362,28 @@ export default function Index({ clientes, filtros }: Props) {
                                 </div>
                             </>
                         )}
-                    </div>
-
-                    {/* Paginación */}
-                    {clientes.last_page > 1 && (
-                        <div className="flex justify-center mt-6">
-                            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-2">
-                                {Array.from({ length: clientes.last_page }, (_, i) => i + 1).map((page) => (
-                                    <Link key={page} href={`/clientes?page=${page}`}>
-                                        <Button
-                                            variant={page === clientes.current_page ? "default" : "ghost"}
-                                            size="sm"
-                                            className={page === clientes.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
-                                        >
-                                            {page}
-                                        </Button>
-                                    </Link>
-                                ))}
-                            </div>
                         </div>
-                    )}
+
+                        {/* Paginación dentro del card */}
+                        {clientes.last_page > 1 && (
+                            <div className="flex justify-center py-6 border-t border-gray-200">
+                                <div className="flex items-center space-x-2">
+                                    {Array.from({ length: clientes.last_page }, (_, i) => i + 1).map((page) => (
+                                        <Link key={page} href={`/clientes?page=${page}`}>
+                                            <Button
+                                                variant={page === clientes.current_page ? "default" : "ghost"}
+                                                size="sm"
+                                                className={page === clientes.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
+                                            >
+                                                {page}
+                                            </Button>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
         </AppLayout>
     );
 }

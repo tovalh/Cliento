@@ -119,3 +119,28 @@ export interface Propuesta {
     dias_restantes?: number;
     esta_vencida?: boolean;
 }
+
+export interface Proyecto {
+    id: number;
+    propuesta_id?: number;
+    cliente_id: number;
+    user_id: number;
+    nombre: string;
+    descripcion?: string;
+    estado: 'por_empezar' | 'en_progreso' | 'en_pausa' | 'completado';
+    fecha_inicio?: string;
+    fecha_entrega?: string;
+    precio_total: number;
+    forma_pago: string;
+    notas?: string;
+    created_at: string;
+    updated_at: string;
+    cliente: Cliente;
+    user: User;
+    propuesta?: Propuesta;
+    // Calculated attributes
+    estado_color?: string;
+    estado_icono?: string;
+    precio_formateado?: string;
+    progreso?: number;
+}

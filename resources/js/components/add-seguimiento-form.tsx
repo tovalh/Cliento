@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
-import { Calendar, Clock, Plus } from 'lucide-react';
+import { Calendar, Clock, Plus, Phone, Mail, Users, FileText, MapPin, Save, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -45,40 +45,39 @@ export default function AddSeguimientoForm({ clienteId }: Props) {
     };
 
     const tipoOptions = [
-        { value: 'llamada', label: '📞 Llamada', icon: '📞' },
-        { value: 'email', label: '📧 Email', icon: '📧' },
-        { value: 'reunion', label: '🤝 Reunión', icon: '🤝' },
-        { value: 'propuesta', label: '📋 Propuesta', icon: '📋' },
-        { value: 'otro', label: '📌 Otro', icon: '📌' },
+        { value: 'llamada', label: 'Llamada', icon: Phone },
+        { value: 'email', label: 'Email', icon: Mail },
+        { value: 'reunion', label: 'Reunión', icon: Users },
+        { value: 'propuesta', label: 'Propuesta', icon: FileText },
+        { value: 'otro', label: 'Otro', icon: MapPin },
     ];
 
     const prioridadOptions = [
-        { value: 'baja', label: '🟢 Baja', color: 'text-green-600' },
-        { value: 'media', label: '🟡 Media', color: 'text-yellow-600' },
-        { value: 'alta', label: '🔴 Alta', color: 'text-red-600' },
+        { value: 'baja', label: 'Baja', color: 'text-green-600' },
+        { value: 'media', label: 'Media', color: 'text-yellow-600' },
+        { value: 'alta', label: 'Alta', color: 'text-red-600' },
     ];
 
     if (!isOpen) {
         return (
             <div className="space-y-3">
-                <h3 className="font-medium text-sm text-muted-foreground">⏰ Agendar Contacto Futuro</h3>
+                <div className="flex items-center gap-2 mb-3">
+                    <Clock className="h-4 w-4 text-[#FF6B35]" />
+                    <h3 className="font-medium text-sm text-gray-700">Agendar Contacto Futuro</h3>
+                </div>
                 
                 {/* Botones rápidos */}
                 <div className="grid grid-cols-2 gap-2">
                     <Button 
-                        variant="outline" 
-                        size="sm"
                         onClick={() => handleQuickSchedule(7, 'Seguimiento semanal')}
-                        className="justify-start"
+                        className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-medium px-4 py-2 shadow-sm transition-colors justify-start text-sm"
                     >
                         <Clock className="mr-2 h-3 w-3" />
                         En 1 semana
                     </Button>
                     <Button 
-                        variant="outline" 
-                        size="sm"
                         onClick={() => handleQuickSchedule(30, 'Seguimiento mensual')}
-                        className="justify-start"
+                        className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-medium px-4 py-2 shadow-sm transition-colors justify-start text-sm"
                     >
                         <Calendar className="mr-2 h-3 w-3" />
                         En 1 mes
@@ -87,10 +86,8 @@ export default function AddSeguimientoForm({ clienteId }: Props) {
                 
                 <div className="grid grid-cols-1 gap-2">
                     <Button 
-                        variant="outline" 
-                        size="sm"
                         onClick={() => handleQuickSchedule(90, 'Seguimiento trimestral')}
-                        className="justify-start"
+                        className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-medium px-4 py-2 shadow-sm transition-colors justify-start text-sm"
                     >
                         <Calendar className="mr-2 h-3 w-3" />
                         En 3 meses
@@ -99,8 +96,7 @@ export default function AddSeguimientoForm({ clienteId }: Props) {
 
                 <Button 
                     onClick={() => setIsOpen(true)}
-                    className="w-full"
-                    size="sm"
+                    className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-medium px-4 py-2 shadow-sm transition-colors text-sm"
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     Personalizar Seguimiento
@@ -113,13 +109,16 @@ export default function AddSeguimientoForm({ clienteId }: Props) {
         <Card className="p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">⏰ Agendar Seguimiento</h3>
+                    <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-[#FF6B35]" />
+                        <h3 className="font-semibold text-gray-800">Agendar Seguimiento</h3>
+                    </div>
                     <Button 
                         type="button" 
-                        variant="outline" 
-                        size="sm"
                         onClick={() => setIsOpen(false)}
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 font-medium text-sm shadow-sm transition-colors"
                     >
+                        <X className="mr-2 h-3 w-3" />
                         Cancelar
                     </Button>
                 </div>
@@ -198,8 +197,12 @@ export default function AddSeguimientoForm({ clienteId }: Props) {
                     />
                 </div>
 
-                <Button type="submit" disabled={processing} className="w-full">
-                    <Calendar className="mr-2 h-4 w-4" />
+                <Button 
+                    type="submit" 
+                    disabled={processing} 
+                    className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-medium px-8 py-2 shadow-sm transition-colors disabled:opacity-50"
+                >
+                    <Save className="mr-2 h-4 w-4" />
                     {processing ? 'Agendando...' : 'Agendar Seguimiento'}
                 </Button>
             </form>

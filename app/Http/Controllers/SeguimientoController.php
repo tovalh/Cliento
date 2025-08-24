@@ -84,6 +84,7 @@ class SeguimientoController extends Controller
             'fecha_seguimiento' => 'required|date|after_or_equal:today',
             'prioridad' => 'required|in:baja,media,alta',
             'tipo' => 'required|in:llamada,email,reunion,propuesta,otro',
+            'importante' => 'nullable|boolean',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -96,11 +97,16 @@ class SeguimientoController extends Controller
     /**
      * Complete a follow-up (mark as done).
      */
-    public function completar(Seguimiento $seguimiento)
+    public function completar(Request $request, Seguimiento $seguimiento)
     {
-        $seguimiento->completar();
+        $request->validate([
+            'completado' => 'required|boolean',
+        ]);
 
-        return back()->with('message', 'Seguimiento marcado como completado.');
+        $seguimiento->update(['completado' => $request->completado]);
+
+        $mensaje = $request->completado ? 'Seguimiento marcado como completado.' : 'Seguimiento marcado como pendiente.';
+        return back()->with('message', $mensaje);
     }
 
     /**
@@ -114,6 +120,7 @@ class SeguimientoController extends Controller
             'fecha_seguimiento' => 'required|date|after_or_equal:today',
             'prioridad' => 'required|in:baja,media,alta',
             'tipo' => 'required|in:llamada,email,reunion,propuesta,otro',
+            'importante' => 'nullable|boolean',
         ]);
 
         $seguimiento->update($validated);

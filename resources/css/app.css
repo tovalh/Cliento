@@ -201,6 +201,55 @@
         color: #9CA3AF !important; /* gray-400 */
         opacity: 0.85 !important;
     }
+
+    /* Estilos por defecto para todos los inputs HTML del sistema */
+    input[type="text"],
+    input[type="email"], 
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+        border: 1px solid #D1D5DB; /* border-gray-300 */
+        border-radius: 6px;
+        background-color: white;
+        padding: 8px 12px;
+        font-size: 14px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus, 
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    input[type="search"]:focus,
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    input[type="datetime-local"]:focus,
+    select:focus {
+        border-color: #FF6B35 !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+        outline: none !important;
+    }
+
+    /* Checkboxes y radio buttons con colores naranjas */
+    input[type="checkbox"],
+    input[type="radio"] {
+        color: #FF6B35 !important;
+    }
+
+    input[type="checkbox"]:focus,
+    input[type="radio"]:focus {
+        ring-color: #FF6B35 !important;
+        ring-opacity: 0.2 !important;
+    }
 }
 
 @layer utilities {

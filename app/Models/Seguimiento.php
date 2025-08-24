@@ -23,12 +23,14 @@ class Seguimiento extends Model
         'tipo',
         'completado',
         'completado_en',
+        'importante',
     ];
 
     protected $casts = [
         'fecha_seguimiento' => 'date',
         'completado' => 'boolean',
         'completado_en' => 'datetime',
+        'importante' => 'boolean',
     ];
 
     public function cliente(): BelongsTo

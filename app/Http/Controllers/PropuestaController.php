@@ -69,14 +69,25 @@ class PropuestaController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $clientes = Cliente::where('estado', 'activo')
+                          ->where('user_id', auth()->id())
                           ->orderBy('nombre')
                           ->get(['id', 'nombre', 'apellido', 'empresa']);
 
+        $clienteSeleccionado = null;
+        $redirectToClient = false;
+        
+        if ($request->filled('cliente_id')) {
+            $clienteSeleccionado = Cliente::find($request->cliente_id);
+            $redirectToClient = true;
+        }
+
         return Inertia::render('Propuestas/Create', [
-            'clientes' => $clientes
+            'clientes' => $clientes,
+            'clienteSeleccionado' => $clienteSeleccionado,
+            'redirectToClient' => $redirectToClient
         ]);
     }
 
@@ -106,6 +117,12 @@ class PropuestaController extends Controller
         // Log de actividad
         ActivityLog::logPropuestaCreated($propuesta->load('cliente'));
 
+        // Si viene con redirect_to_client, volver al cliente
+        if ($request->filled('redirect_to_client') && $request->redirect_to_client === 'true') {
+            return redirect()->route('clientes.show', $propuesta->cliente_id)
+                            ->with('message', 'Propuesta creada exitosamente.');
+        }
+
         return redirect()->route('propuestas.show', $propuesta)
                         ->with('message', 'Propuesta creada exitosamente.');
     }
@@ -128,6 +145,7 @@ class PropuestaController extends Controller
     public function edit(Propuesta $propuesta)
     {
         $clientes = Cliente::where('estado', 'activo')
+                          ->where('user_id', auth()->id())
                           ->orderBy('nombre')
                           ->get(['id', 'nombre', 'apellido', 'empresa']);
 

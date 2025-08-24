@@ -178,4 +178,17 @@ class ActivityLog extends Model
             ['cliente_nombre' => $nota->cliente->nombre . ' ' . $nota->cliente->apellido]
         );
     }
+
+    public static function logClienteDeleted($cliente)
+    {
+        return self::log(
+            'deleted',
+            'Cliente',
+            $cliente->id,
+            'Eliminaste a ' . $cliente->nombre . ' ' . $cliente->apellido,
+            'del sistema',
+            '🗑️',
+            ['cliente_nombre' => $cliente->nombre . ' ' . $cliente->apellido]
+        );
+    }
 }

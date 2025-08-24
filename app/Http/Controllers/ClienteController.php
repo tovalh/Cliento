@@ -14,7 +14,7 @@ class ClienteController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Cliente::query();
+        $query = Cliente::where('user_id', auth()->id());
 
         // Filtro de búsqueda general
         if ($request->filled('buscar')) {
@@ -81,6 +81,7 @@ class ClienteController extends Controller
             'notas' => 'nullable|string',
         ]);
 
+        $validated['user_id'] = auth()->id();
         $cliente = Cliente::create($validated);
         
         // Log de actividad
@@ -94,11 +95,22 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
+        // Verificar que el cliente pertenece al usuario actual
+        if ($cliente->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para ver este cliente.');
+        }
+
         $notas = $cliente->notas()->with('user')->latest()->get();
+        $seguimientos = $cliente->seguimientos()->with('user')->latest()->get();
+        $propuestas = $cliente->propuestas()->with('user')->latest()->get();
+        $proyectos = $cliente->proyectos()->with('user')->latest()->get();
         
         return Inertia::render('Clientes/Show', [
             'cliente' => $cliente,
-            'notas' => $notas
+            'notas' => $notas,
+            'seguimientos' => $seguimientos,
+            'propuestas' => $propuestas,
+            'proyectos' => $proyectos
         ]);
     }
 
@@ -107,6 +119,11 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
+        // Verificar que el cliente pertenece al usuario actual
+        if ($cliente->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para editar este cliente.');
+        }
+
         return Inertia::render('Clientes/Edit', [
             'cliente' => $cliente
         ]);
@@ -117,6 +134,11 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
+        // Verificar que el cliente pertenece al usuario actual
+        if ($cliente->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para actualizar este cliente.');
+        }
+
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -140,6 +162,14 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
+        // Verificar que el cliente pertenece al usuario actual
+        if ($cliente->user_id !== auth()->id()) {
+            abort(403, 'No tienes permiso para eliminar este cliente.');
+        }
+
+        // Log de actividad antes de eliminar
+        ActivityLog::logClienteDeleted($cliente);
+        
         $cliente->delete();
 
         return redirect()->route('clientes.index')->with('message', 'Cliente eliminado exitosamente.');

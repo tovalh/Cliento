@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Cliente extends Model
 {
@@ -13,6 +14,7 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
+        'user_id',
         'nombre',
         'apellido',
         'email',
@@ -62,5 +64,20 @@ class Cliente extends Model
     public function seguimientosPendientes(): HasMany
     {
         return $this->hasMany(Seguimiento::class)->pendientes();
+    }
+
+    public function propuestas(): HasMany
+    {
+        return $this->hasMany(Propuesta::class);
+    }
+
+    public function proyectos(): HasMany
+    {
+        return $this->hasMany(Proyecto::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

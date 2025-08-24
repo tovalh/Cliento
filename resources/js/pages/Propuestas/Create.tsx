@@ -35,26 +35,37 @@ interface BreadcrumbItem {
 
 interface Props {
     clientes: Cliente[];
+    clienteSeleccionado?: Cliente;
+    redirectToClient?: boolean;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Propuestas',
-        href: '/propuestas',
-    },
-    {
-        title: 'Nueva Propuesta',
-        href: '/propuestas/create',
-    },
-];
+// Los breadcrumbs se generarán dinámicamente en el componente
 
-export default function Create({ clientes }: Props) {
+export default function Create({ clientes, clienteSeleccionado, redirectToClient = false }: Props) {
+    // Generar breadcrumbs dinámicamente
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        ...(redirectToClient && clienteSeleccionado ? [{
+            title: 'Clientes',
+            href: '/clientes',
+        }, {
+            title: `${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`,
+            href: `/clientes/${clienteSeleccionado.id}`,
+        }] : [{
+            title: 'Propuestas',
+            href: '/propuestas',
+        }]),
+        {
+            title: 'Nueva Propuesta',
+            href: '/propuestas/create',
+        },
+    ];
+
     const { data, setData, post, processing, errors } = useForm({
-        cliente_id: '',
+        cliente_id: clienteSeleccionado?.id.toString() || '',
         titulo: '',
         descripcion_proyecto: '',
         alcance_incluye: '',
@@ -65,6 +76,7 @@ export default function Create({ clientes }: Props) {
         terminos_condiciones: '',
         fecha_limite_respuesta: '',
         notas_internas: '',
+        redirect_to_client: redirectToClient ? 'true' : 'false',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -115,10 +127,13 @@ export default function Create({ clientes }: Props) {
 
                             <div className="flex items-center space-x-4">
                                 {/* Botón Volver */}
-                                <Link href="/propuestas">
+                                <Link href={redirectToClient && clienteSeleccionado ? `/clientes/${clienteSeleccionado.id}` : '/propuestas'}>
                                     <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
-                                        Volver a Propuestas
+                                        {redirectToClient && clienteSeleccionado 
+                                            ? `Volver a ${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`
+                                            : 'Volver a Propuestas'
+                                        }
                                     </Button>
                                 </Link>
                             </div>
@@ -171,6 +186,12 @@ export default function Create({ clientes }: Props) {
                                             <p className="text-sm text-red-600 flex items-center gap-1">
                                                 <AlertCircle className="h-3 w-3" />
                                                 {errors.cliente_id}
+                                            </p>
+                                        )}
+                                        {clienteSeleccionado && (
+                                            <p className="text-sm text-[#FF6B35] flex items-center gap-1">
+                                                <User className="h-3 w-3" />
+                                                Cliente preseleccionado desde el perfil del cliente
                                             </p>
                                         )}
                                     </div>
