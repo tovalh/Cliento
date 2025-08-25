@@ -8,6 +8,7 @@ use App\Models\Propuesta;
 use App\Models\ProyectoTarea;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProyectoController extends Controller
 {
@@ -185,5 +186,33 @@ class ProyectoController extends Controller
             'valor_total' => Proyecto::sum('precio_total'),
             'valor_completados' => Proyecto::completados()->sum('precio_total'),
         ];
+    }
+
+    /**
+     * Exportar proyecto a PDF con diseño profesional
+     */
+    public function exportarPdf(Proyecto $proyecto)
+    {
+        // Cargar el proyecto con sus relaciones de manera segura
+        $proyecto->load(['cliente', 'user', 'propuesta', 'tareas']);
+        
+        // Asegurar que las relaciones existan como colecciones vacías si son null
+        if (is_null($proyecto->tareas)) {
+            $proyecto->setRelation('tareas', collect());
+        }
+        
+        // Generar el PDF usando la vista
+        $pdf = Pdf::loadView('proyectos.pdf', compact('proyecto'))
+                  ->setPaper('a4', 'portrait')
+                  ->setOptions([
+                      'isHtml5ParserEnabled' => true,
+                      'isRemoteEnabled' => true,
+                      'defaultFont' => 'sans-serif'
+                  ]);
+
+        // Nombre del archivo
+        $filename = 'Proyecto_' . str_replace([' ', '/'], ['_', '_'], $proyecto->nombre) . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

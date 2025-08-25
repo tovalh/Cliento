@@ -284,54 +284,58 @@ export default function Index({ seguimientos, filtros }: Props) {
             <Head title="Seguimientos" />
 
             <div className="min-h-screen bg-[#F8F9FA]">
-                {/* Header naranja */}
-                <div className="bg-[#FF6B35]">
-                    <div className="mx-auto px-8 py-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-[28px] font-bold text-white">
-                                    Seguimientos
-                                </h1>
-                                <p className="text-white text-base opacity-90 mt-1">
-                                    Gestiona y organiza todos tus seguimientos de manera eficiente
-                                </p>
-                            </div>
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-[28px] font-bold text-white">
+                                            Seguimientos
+                                        </h1>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Gestiona y organiza todos tus seguimientos de manera eficiente
+                                        </p>
+                                    </div>
 
-                            <div className="flex items-center space-x-4">
-                                {/* Barra de búsqueda */}
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        type="text"
-                                        placeholder="Buscar seguimientos..."
-                                        value={data.buscar}
-                                        onChange={(e) => setData('buscar', e.target.value)}
-                                        onBlur={() => {
-                                            handleFilter();
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleFilter();
-                                            }
-                                        }}
-                                        className="pl-10 w-[300px] bg-white border-0"
-                                    />
+                                    <div className="flex items-center space-x-4">
+                                        {/* Barra de búsqueda */}
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Buscar seguimientos..."
+                                                value={data.buscar}
+                                                onChange={(e) => setData('buscar', e.target.value)}
+                                                onBlur={() => {
+                                                    handleFilter();
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleFilter();
+                                                    }
+                                                }}
+                                                className="pl-10 w-[300px] bg-white border-0"
+                                            />
+                                        </div>
+
+                                        {/* Botón Nuevo Seguimiento */}
+                                        <Link href="/seguimientos/create">
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Nuevo Seguimiento
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
-
-                                {/* Botón Nuevo Seguimiento */}
-                                <Link href="/seguimientos/create">
-                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Nuevo Seguimiento
-                                    </Button>
-                                </Link>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Contenido principal */}
-                <div className="mx-auto p-6 space-y-8">
+                        {/* Contenido */}
+                        <div className="p-6 space-y-8">
 
                     {/* Statistics Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -717,6 +721,8 @@ export default function Index({ seguimientos, filtros }: Props) {
                             </div>
                         </div>
                     )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </AppLayout>

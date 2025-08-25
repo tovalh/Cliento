@@ -117,30 +117,45 @@ export default function Edit({ proyecto }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Proyecto: ${proyecto.nombre}`} />
-            
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50/30 p-8">
-                <div className="mx-auto max-w-4xl space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link href={`/proyectos/${proyecto.id}`}>
-                                <Button variant="outline" size="sm">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Button>
-                            </Link>
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Editar Proyecto</h1>
-                                <p className="text-gray-600">{proyecto.nombre}</p>
+
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-[28px] font-bold text-white">
+                                            Editar Proyecto
+                                        </h1>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Modifica la información de {proyecto.nombre}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center space-x-4">
+                                        {/* Botón Volver */}
+                                        <Link href={`/proyectos/${proyecto.id}`}>
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                                Volver al Proyecto
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Form */}
-                        <div className="lg:col-span-2">
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div className="p-8">
+                        {/* Contenido dentro del card */}
+                        <div className="p-8">
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Main Form */}
+                                <div className="lg:col-span-2">
+                                    <div className="bg-gray-50 rounded-lg p-6">
                                     <h2 className="text-lg font-semibold text-[#333] mb-6 pb-2 border-b border-gray-200 flex items-center gap-2">
                                         <FileText className="h-5 w-5 text-[#FF6B35]" />
                                         Información del Proyecto
@@ -265,8 +280,8 @@ export default function Edit({ proyecto }: Props) {
                                         </div>
 
                                         <div className="flex gap-4 pt-4">
-                                            <Button 
-                                                type="submit" 
+                                            <Button
+                                                type="submit"
                                                 disabled={processing}
                                                 className="bg-purple-600 hover:bg-purple-700"
                                             >
@@ -284,11 +299,10 @@ export default function Edit({ proyecto }: Props) {
                             </div>
                         </div>
 
-                        {/* Sidebar with Context Info */}
-                        <div className="space-y-6">
-                            {/* Client Info */}
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div className="p-6">
+                                {/* Sidebar with Context Info */}
+                                <div className="space-y-6">
+                                    {/* Client Info */}
+                                    <div className="bg-gray-50 rounded-lg p-6">
                                     <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
                                         <User className="h-5 w-5 text-[#FF6B35]" />
                                         Cliente
@@ -305,19 +319,17 @@ export default function Edit({ proyecto }: Props) {
                                                 </div>
                                             )}
                                         </div>
-                                        
+
                                         <Link href={`/clientes/${proyecto.cliente.id}`}>
                                             <Button variant="outline" className="w-full">
                                                 Ver Cliente
                                             </Button>
                                         </Link>
                                     </div>
-                                </div>
-                            </div>
+                                    </div>
 
-                            {/* Propuesta Original */}
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div className="p-6">
+                                    {/* Propuesta Original */}
+                                    <div className="bg-gray-50 rounded-lg p-6">
                                     <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
                                         <FileText className="h-5 w-5 text-[#FF6B35]" />
                                         Propuesta Original
@@ -333,19 +345,17 @@ export default function Edit({ proyecto }: Props) {
                                                 ${proyecto.propuesta.precio_total.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                                             </p>
                                         </div>
-                                        
+
                                         <Link href={`/propuestas/${proyecto.propuesta.id}`}>
                                             <Button variant="outline" className="w-full">
                                                 Ver Propuesta
                                             </Button>
                                         </Link>
                                     </div>
-                                </div>
-                            </div>
+                                    </div>
 
-                            {/* Project Timeline */}
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <div className="p-6">
+                                    {/* Project Timeline */}
+                                    <div className="bg-gray-50 rounded-lg p-6">
                                     <h3 className="text-lg font-semibold text-[#333] mb-4 flex items-center gap-2">
                                         <Calendar className="h-5 w-5 text-[#FF6B35]" />
                                         Cronología
@@ -368,12 +378,12 @@ export default function Edit({ proyecto }: Props) {
                                             </div>
                                         )}
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
         </AppLayout>
     );
 }

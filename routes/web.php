@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('dashboard/completar-tarea/{seguimiento}', [DashboardController::class, 'completarTarea'])->name('dashboard.completar-tarea');
     
     Route::resource('clientes', ClienteController::class);
+    Route::get('clientes/{cliente}/export-pdf', [ClienteController::class, 'exportarPdf'])->name('clientes.export-pdf');
     Route::resource('notas', NotaController::class)->only(['store', 'update', 'destroy']);
     Route::resource('seguimientos', SeguimientoController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('seguimientos/{seguimiento}/completar', [SeguimientoController::class, 'completar'])->name('seguimientos.completar');
@@ -34,10 +35,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('propuestas/{propuesta}/cambiar-estado', [PropuestaController::class, 'cambiarEstado'])->name('propuestas.cambiar-estado');
     Route::post('propuestas/{propuesta}/followup', [PropuestaController::class, 'registrarFollowup'])->name('propuestas.followup');
     Route::post('propuestas/{propuesta}/duplicar', [PropuestaController::class, 'duplicar'])->name('propuestas.duplicar');
-    Route::get('propuestas/{propuesta}/pdf', [PropuestaController::class, 'exportarPdf'])->name('propuestas.pdf');
+    Route::get('propuestas/{propuesta}/export-pdf', [PropuestaController::class, 'exportarPdf'])->name('propuestas.export-pdf');
     
     // Proyectos routes
     Route::resource('proyectos', ProyectoController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+    Route::get('proyectos/{proyecto}/export-pdf', [ProyectoController::class, 'exportarPdf'])->name('proyectos.export-pdf');
     Route::post('propuestas/{propuesta}/convertir-proyecto', [ProyectoController::class, 'convertirDesdePropuesta'])->name('propuestas.convertir-proyecto');
     Route::post('proyectos/{proyecto}/cambiar-estado', [ProyectoController::class, 'cambiarEstado'])->name('proyectos.cambiar-estado');
     Route::post('proyectos/{proyecto}/tareas', [ProyectoController::class, 'crearTarea'])->name('proyectos.tareas.store');

@@ -112,39 +112,40 @@ export default function Create({ clientes, clienteSeleccionado, redirectToClient
             <Head title="Nueva Propuesta" />
 
             <div className="min-h-screen bg-[#F8F9FA]">
-                {/* Header naranja */}
-                <div className="bg-[#FF6B35]">
-                    <div className="mx-auto px-8 py-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-[28px] font-bold text-white">
-                                    Crear Propuesta
-                                </h1>
-                                <p className="text-white text-base opacity-90 mt-1">
-                                    Crea una propuesta comercial profesional para tu cliente
-                                </p>
-                            </div>
-
-                            <div className="flex items-center space-x-4">
-                                {/* Botón Volver */}
-                                <Link href={redirectToClient && clienteSeleccionado ? `/clientes/${clienteSeleccionado.id}` : '/propuestas'}>
-                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
-                                        <ArrowLeft className="mr-2 h-4 w-4" />
-                                        {redirectToClient && clienteSeleccionado 
-                                            ? `Volver a ${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`
-                                            : 'Volver a Propuestas'
-                                        }
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Contenido principal */}
                 <div className="mx-auto p-6">
-                    {/* Tarjeta del formulario */}
+                    {/* Tarjeta principal que contiene todo */}
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-[28px] font-bold text-white">
+                                            Crear Propuesta
+                                        </h1>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Crea una propuesta comercial profesional para tu cliente
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center space-x-4">
+                                        {/* Botón Volver */}
+                                        <Link href={redirectToClient && clienteSeleccionado ? `/clientes/${clienteSeleccionado.id}` : '/propuestas'}>
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                                {redirectToClient && clienteSeleccionado 
+                                                    ? `Volver a ${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`
+                                                    : 'Volver a Propuestas'
+                                                }
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Contenido del formulario */}
                         <div className="p-8">
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 {/* Información Básica */}

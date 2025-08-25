@@ -11,7 +11,7 @@ import Timeline from '@/components/timeline';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Cliente, type Nota, type Seguimiento, type Propuesta, type Proyecto } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Mail, MapPin, Phone, Trash2, User, Edit, MessageSquare, Building2, FileText, ChevronDown, Briefcase, FolderOpen, Clock, Plus, X, Save } from 'lucide-react';
+import { ArrowLeft, Calendar, Mail, MapPin, Phone, Trash2, User, Edit, MessageSquare, Building2, FileText, ChevronDown, Briefcase, FolderOpen, Clock, Plus, X, Save, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -53,6 +53,10 @@ export default function Show({ cliente, notas, seguimientos = [], propuestas = [
         if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
             router.delete(`/clientes/${cliente.id}`);
         }
+    };
+
+    const handleExportPDF = () => {
+        window.open(`/clientes/${cliente.id}/export-pdf`, '_blank');
     };
 
     const handleQuickSchedule = (days: number, titulo: string) => {
@@ -127,6 +131,15 @@ export default function Show({ cliente, notas, seguimientos = [], propuestas = [
                                                 Volver a Clientes
                                             </Button>
                                         </Link>
+
+                                        {/* Botón PDF Mágico */}
+                                        <Button 
+                                            onClick={handleExportPDF}
+                                            className="cursor-pointer rounded-lg bg-purple-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-purple-700"
+                                        >
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            PDF Mágico
+                                        </Button>
 
                                         {/* Botón Agregar Seguimiento */}
                                         <Button

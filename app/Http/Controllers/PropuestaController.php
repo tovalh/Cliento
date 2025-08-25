@@ -7,6 +7,7 @@ use App\Models\Propuesta;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PropuestaController extends Controller
 {
@@ -284,11 +285,25 @@ class PropuestaController extends Controller
     }
 
     /**
-     * Exportar propuesta a PDF (placeholder para futura implementación)
+     * Exportar propuesta a PDF con diseño profesional
      */
     public function exportarPdf(Propuesta $propuesta)
     {
-        // TODO: Implementar exportación a PDF
-        return back()->with('message', 'Funcionalidad de exportación en desarrollo.');
+        // Cargar la propuesta con sus relaciones
+        $propuesta->load(['cliente', 'user']);
+        
+        // Generar el PDF usando la vista
+        $pdf = Pdf::loadView('propuestas.pdf', compact('propuesta'))
+                  ->setPaper('a4', 'portrait')
+                  ->setOptions([
+                      'isHtml5ParserEnabled' => true,
+                      'isRemoteEnabled' => true,
+                      'defaultFont' => 'sans-serif'
+                  ]);
+
+        // Nombre del archivo
+        $filename = 'Propuesta_' . str_replace([' ', '/'], ['_', '_'], $propuesta->titulo) . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

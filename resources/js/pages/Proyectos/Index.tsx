@@ -288,58 +288,62 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
             <Head title="Proyectos" />
 
             <div className="min-h-screen bg-[#F8F9FA]">
-                {/* Header naranja */}
-                <div className="bg-[#FF6B35]">
-                    <div className="mx-auto px-8 py-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-[28px] font-bold text-white">
-                                    Proyectos
-                                </h1>
-                                <p className="text-white text-base opacity-90 mt-1">
-                                    Gestiona y supervisa todos tus proyectos activos
-                                </p>
-                            </div>
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-[28px] font-bold text-white">
+                                            Proyectos
+                                        </h1>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Gestiona y supervisa todos tus proyectos activos
+                                        </p>
+                                    </div>
 
-                            <div className="flex items-center space-x-4">
-                                {/* Barra de búsqueda */}
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        type="text"
-                                        placeholder="Buscar proyectos..."
-                                        value={data.buscar}
-                                        onChange={(e) => setData('buscar', e.target.value)}
-                                        onBlur={() => {
-                                            handleFilter();
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleFilter();
-                                            }
-                                        }}
-                                        className="pl-10 w-[300px] bg-white border-0"
-                                    />
+                                    <div className="flex items-center space-x-4">
+                                        {/* Barra de búsqueda */}
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Buscar proyectos..."
+                                                value={data.buscar}
+                                                onChange={(e) => setData('buscar', e.target.value)}
+                                                onBlur={() => {
+                                                    handleFilter();
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleFilter();
+                                                    }
+                                                }}
+                                                className="pl-10 w-[300px] bg-white border-0"
+                                            />
+                                        </div>
+
+                                        {/* Botón Nuevo Proyecto */}
+                                        <Link href="/proyectos/create">
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Nuevo Proyecto
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
-
-                                {/* Botón Nuevo Proyecto */}
-                                <Link href="/proyectos/create">
-                                    <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Nuevo Proyecto
-                                    </Button>
-                                </Link>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+                        {/* Contenido dentro del card */}
+                        <div className="p-6 space-y-8">
 
-                {/* Contenido principal */}
-                <div className="mx-auto p-6 space-y-8">
-
-                    {/* Statistics Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all">
+                            {/* Statistics Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -400,8 +404,8 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
                         </Card>
                     </div>
 
-                    {/* Value Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Value Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
@@ -427,8 +431,8 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
                         </Card>
                     </div>
 
-                    {/* Filters Panel */}
-                    {activeFilters && (
+                            {/* Filters Panel */}
+                            {activeFilters && (
                         <Card className="bg-white shadow-lg border-0">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -485,11 +489,11 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
                                     </Button>
                                 </div>
                             </CardContent>
-                        </Card>
-                    )}
+                                </Card>
+                            )}
 
-                    {/* Tabla de proyectos */}
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                            {/* Tabla de proyectos */}
+                            <div className="bg-gray-50 rounded-lg overflow-hidden border">
                         {proyectos.data.length === 0 ? (
                             <div className="text-center py-16">
                                 <div className="text-gray-400 mb-4">
@@ -732,26 +736,28 @@ export default function Index({ proyectos, filtros, estadisticas }: Props) {
                                 </div>
                             </>
                         )}
-                    </div>
-
-                    {/* Paginación */}
-                    {proyectos.last_page > 1 && (
-                        <div className="flex justify-center mt-6">
-                            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-sm p-2">
-                                {Array.from({ length: proyectos.last_page }, (_, i) => i + 1).map((page) => (
-                                    <Link key={page} href={`/proyectos?page=${page}`}>
-                                        <Button
-                                            variant={page === proyectos.current_page ? "default" : "ghost"}
-                                            size="sm"
-                                            className={page === proyectos.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
-                                        >
-                                            {page}
-                                        </Button>
-                                    </Link>
-                                ))}
                             </div>
+
+                            {/* Paginación dentro del card */}
+                            {proyectos.last_page > 1 && (
+                                <div className="flex justify-center py-6 border-t border-gray-200">
+                                    <div className="flex items-center space-x-2">
+                                        {Array.from({ length: proyectos.last_page }, (_, i) => i + 1).map((page) => (
+                                            <Link key={page} href={`/proyectos?page=${page}`}>
+                                                <Button
+                                                    variant={page === proyectos.current_page ? "default" : "ghost"}
+                                                    size="sm"
+                                                    className={page === proyectos.current_page ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90 transition-colors cursor-pointer" : "hover:bg-gray-100 transition-colors cursor-pointer"}
+                                                >
+                                                    {page}
+                                                </Button>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </AppLayout>

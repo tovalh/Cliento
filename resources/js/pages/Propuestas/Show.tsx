@@ -177,33 +177,33 @@ export default function Show({ propuesta }: Props) {
 
     const getEstadoConfig = (estado: string) => {
         const configs = {
-            borrador: { 
-                color: 'bg-gray-100 text-gray-700 border-gray-200', 
-                emoji: '🟡', 
+            borrador: {
+                color: 'bg-gray-100 text-gray-700 border-gray-200',
+                emoji: '🟡',
                 label: 'Borrador',
                 description: 'La propuesta está en desarrollo'
             },
-            enviada: { 
-                color: 'bg-blue-100 text-blue-700 border-blue-200', 
-                emoji: '🔵', 
+            enviada: {
+                color: 'bg-blue-100 text-blue-700 border-blue-200',
+                emoji: '🔵',
                 label: 'Enviada',
                 description: 'Esperando respuesta del cliente'
             },
-            aprobada: { 
-                color: 'bg-green-100 text-green-700 border-green-200', 
-                emoji: '🟢', 
+            aprobada: {
+                color: 'bg-green-100 text-green-700 border-green-200',
+                emoji: '🟢',
                 label: 'Aprobada',
                 description: 'Cliente ha aceptado la propuesta'
             },
-            rechazada: { 
-                color: 'bg-red-100 text-red-700 border-red-200', 
-                emoji: '❌', 
+            rechazada: {
+                color: 'bg-red-100 text-red-700 border-red-200',
+                emoji: '❌',
                 label: 'Rechazada',
                 description: 'Cliente ha rechazado la propuesta'
             },
-            negociacion: { 
-                color: 'bg-yellow-100 text-yellow-700 border-yellow-200', 
-                emoji: '⏸️', 
+            negociacion: {
+                color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                emoji: '⏸️',
                 label: 'En Negociación',
                 description: 'Se están discutiendo cambios'
             }
@@ -212,120 +212,139 @@ export default function Show({ propuesta }: Props) {
     };
 
     const estadoConfig = getEstadoConfig(propuesta.estado);
-    const isVencida = propuesta.fecha_limite_respuesta && 
-                     new Date(propuesta.fecha_limite_respuesta) < new Date() && 
+    const isVencida = propuesta.fecha_limite_respuesta &&
+                     new Date(propuesta.fecha_limite_respuesta) < new Date() &&
                      propuesta.estado === 'enviada';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={propuesta.titulo} />
-            
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30 p-8">
-                <div className="mx-auto max-w-6xl space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-4">
-                                <Link href="/propuestas">
-                                    <Button variant="outline" size="sm">
-                                        <ArrowLeft className="mr-2 h-4 w-4" />
-                                        Volver
-                                    </Button>
-                                </Link>
-                                <div>
-                                    <div className="flex items-center gap-4 mb-2">
-                                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                                            {propuesta.titulo}
-                                        </h1>
-                                        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border-2 ${estadoConfig.color}`}>
-                                            <span className="text-lg">{estadoConfig.emoji}</span>
-                                            <span>{estadoConfig.label}</span>
-                                        </div>
-                                        {isVencida && (
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
-                                                <AlertTriangle className="h-4 w-4" />
-                                                <span className="text-sm font-medium">Vencida</span>
+
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-4">
+                                            <h1 className="text-[28px] font-bold text-white">
+                                                {propuesta.titulo}
+                                            </h1>
+                                            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border-2 bg-white ${estadoConfig.color.replace('bg-', 'text-')}`}>
+                                                <span className="text-lg">{estadoConfig.emoji}</span>
+                                                <span>{estadoConfig.label}</span>
                                             </div>
-                                        )}
+                                            {isVencida && (
+                                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
+                                                    <AlertTriangle className="h-4 w-4" />
+                                                    <span className="text-sm font-medium">Vencida</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Propuesta para {propuesta.cliente.nombre} {propuesta.cliente.apellido}
+                                            {propuesta.cliente.empresa && ` - ${propuesta.cliente.empresa}`}
+                                        </p>
                                     </div>
-                                    <p className="text-gray-600">
-                                        Propuesta para {propuesta.cliente.nombre} {propuesta.cliente.apellido}
-                                        {propuesta.cliente.empresa && ` - ${propuesta.cliente.empresa}`}
-                                    </p>
+
+                                    <div className="flex items-center space-x-3">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setShowFollowupModal(true)}
+                                            className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                                        >
+                                            <MessageSquare className="mr-2 h-4 w-4" />
+                                            Follow-up
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setShowEstadoModal(true)}
+                                            className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                                        >
+                                            <Clock className="mr-2 h-4 w-4" />
+                                            Cambiar Estado
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={handleDuplicar}
+                                            className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                                        >
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Duplicar
+                                        </Button>
+                                        <Link href={`/propuestas/${propuesta.id}/edit`}>
+                                            <Button className="bg-blue-600 text-white hover:bg-blue-700 font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Editar
+                                            </Button>
+                                        </Link>
+                                        {propuesta.estado === 'borrador' && (
+                                            <Button onClick={handleEnviar} className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Send className="mr-2 h-4 w-4" />
+                                                Marcar como Enviada
+                                            </Button>
+                                        )}
+                                        {propuesta.estado === 'aprobada' && !propuesta.proyecto && (
+                                            <Button onClick={handleConvertirAProyecto} className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Rocket className="mr-2 h-4 w-4" />
+                                                Convertir en Proyecto
+                                            </Button>
+                                        )}
+                                        {propuesta.proyecto && (
+                                            <Link href={`/proyectos/${propuesta.proyecto.id}`}>
+                                                <Button className="bg-purple-600 text-white hover:bg-purple-700 font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                    <Rocket className="mr-2 h-4 w-4" />
+                                                    Ver Proyecto
+                                                </Button>
+                                            </Link>
+                                        )}
+                                        <Link href="/propuestas">
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                                Volver a Propuestas
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Button variant="outline" onClick={() => setShowFollowupModal(true)}>
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Follow-up
-                            </Button>
-                            <Button variant="outline" onClick={() => setShowEstadoModal(true)}>
-                                <Clock className="mr-2 h-4 w-4" />
-                                Cambiar Estado
-                            </Button>
-                            <Button variant="outline" onClick={handleDuplicar}>
-                                <Copy className="mr-2 h-4 w-4" />
-                                Duplicar
-                            </Button>
-                            <Link href={`/propuestas/${propuesta.id}/edit`}>
-                                <Button variant="outline">
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Button>
-                            </Link>
-                            {propuesta.estado === 'borrador' && (
-                                <Button onClick={handleEnviar} className="bg-green-600 hover:bg-green-700">
-                                    <Send className="mr-2 h-4 w-4" />
-                                    Marcar como Enviada
-                                </Button>
-                            )}
-                            {propuesta.estado === 'aprobada' && !propuesta.proyecto && (
-                                <Button onClick={handleConvertirAProyecto} className="bg-purple-600 hover:bg-purple-700">
-                                    <Rocket className="mr-2 h-4 w-4" />
-                                    Convertir en Proyecto
-                                </Button>
-                            )}
-                            {propuesta.proyecto && (
-                                <Link href={`/proyectos/${propuesta.proyecto.id}`}>
-                                    <Button variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                                        <Rocket className="mr-2 h-4 w-4" />
-                                        Ver Proyecto
-                                    </Button>
-                                </Link>
-                            )}
-                        </div>
-                    </div>
+
+                        {/* Contenido dentro del card con padding */}
+                        <div className="p-6 space-y-8">
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Columna Principal */}
                         <div className="lg:col-span-2 space-y-8">
                             {/* Descripción del Proyecto */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5" />
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                        <FileText className="h-5 w-5 text-[#FF6B35]" />
                                         Descripción del Proyecto
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6">
+                                    </h3>
+                                </div>
+                                <div className="p-6">
                                     <div className="prose max-w-none">
                                         <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                                             {propuesta.descripcion_proyecto}
                                         </p>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Alcance del Proyecto */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Building2 className="h-5 w-5" />
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                        <Building2 className="h-5 w-5 text-[#FF6B35]" />
                                         Alcance del Proyecto
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6">
+                                    </h3>
+                                </div>
+                                <div className="p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
                                             <h4 className="font-semibold text-green-700 mb-3 flex items-center gap-2">
@@ -359,55 +378,55 @@ export default function Show({ propuesta }: Props) {
                                             </div>
                                         )}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Términos y Condiciones */}
                             {propuesta.terminos_condiciones && (
-                                <Card className="shadow-lg border-0">
-                                    <CardHeader className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-                                        <CardTitle className="flex items-center gap-2">
-                                            <FileText className="h-5 w-5" />
+                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                        <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                            <FileText className="h-5 w-5 text-[#FF6B35]" />
                                             Términos y Condiciones
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-6">
+                                        </h3>
+                                    </div>
+                                    <div className="p-6">
                                         <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                                             {propuesta.terminos_condiciones}
                                         </p>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
                             )}
 
                             {/* Notas Internas */}
                             {propuesta.notas_internas && (
-                                <Card className="shadow-lg border-0 border-l-4 border-l-yellow-400">
-                                    <CardHeader className="bg-yellow-50">
-                                        <CardTitle className="flex items-center gap-2 text-yellow-800">
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg overflow-hidden border-l-4 border-l-yellow-400">
+                                    <div className="bg-yellow-100 px-6 py-4 border-b border-yellow-200">
+                                        <h3 className="text-lg font-semibold text-yellow-800 flex items-center gap-2">
                                             <MessageSquare className="h-5 w-5" />
                                             Notas Internas (Privadas)
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-6 bg-yellow-50">
+                                        </h3>
+                                    </div>
+                                    <div className="p-6 bg-yellow-50">
                                         <p className="text-yellow-800 leading-relaxed whitespace-pre-line">
                                             {propuesta.notas_internas}
                                         </p>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Información del Cliente */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <User className="h-5 w-5" />
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                        <User className="h-5 w-5 text-[#FF6B35]" />
                                         Cliente
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-4">
+                                    </h3>
+                                </div>
+                                <div className="p-6 space-y-4">
                                     <div>
                                         <h3 className="font-semibold text-lg">
                                             {propuesta.cliente.nombre} {propuesta.cliente.apellido}
@@ -441,25 +460,25 @@ export default function Show({ propuesta }: Props) {
                                             Ver Perfil Completo
                                         </Button>
                                     </Link>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Información Comercial */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <DollarSign className="h-5 w-5" />
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                        <DollarSign className="h-5 w-5 text-[#FF6B35]" />
                                         Información Comercial
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-4">
+                                    </h3>
+                                </div>
+                                <div className="p-6 space-y-4">
                                     <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
                                         <p className="text-sm text-green-600 mb-1">Precio Total</p>
                                         <p className="text-3xl font-bold text-green-700">
                                             {formatPrice(propuesta.precio_total)}
                                         </p>
                                     </div>
-                                    
+
                                     <div className="space-y-3">
                                         <div>
                                             <p className="text-sm font-medium text-gray-600">Forma de Pago</p>
@@ -470,30 +489,30 @@ export default function Show({ propuesta }: Props) {
                                             <p className="text-gray-900">{propuesta.tiempo_entrega}</p>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Fechas Importantes */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Calendar className="h-5 w-5" />
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333] flex items-center gap-2">
+                                        <Calendar className="h-5 w-5 text-[#FF6B35]" />
                                         Fechas Importantes
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-4">
+                                    </h3>
+                                </div>
+                                <div className="p-6 space-y-4">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Fecha de Creación</p>
                                         <p className="text-gray-900">{formatDate(propuesta.created_at)}</p>
                                     </div>
-                                    
+
                                     {propuesta.fecha_envio && (
                                         <div>
                                             <p className="text-sm font-medium text-gray-600">Fecha de Envío</p>
                                             <p className="text-gray-900">{formatDate(propuesta.fecha_envio)}</p>
                                         </div>
                                     )}
-                                    
+
                                     {propuesta.fecha_limite_respuesta && (
                                         <div>
                                             <p className="text-sm font-medium text-gray-600">Límite de Respuesta</p>
@@ -521,15 +540,15 @@ export default function Show({ propuesta }: Props) {
                                             <p className="text-gray-900">{formatDate(propuesta.proximo_recordatorio)}</p>
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
 
                             {/* Acciones Rápidas */}
-                            <Card className="shadow-lg border-0">
-                                <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-800 text-white">
-                                    <CardTitle>Acciones Rápidas</CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-6 space-y-3">
+                            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <h3 className="text-lg font-semibold text-[#333]">Acciones Rápidas</h3>
+                                </div>
+                                <div className="p-6 space-y-3">
                                     <Button variant="outline" className="w-full" onClick={() => router.get(`/propuestas/${propuesta.id}/pdf`)}>
                                         <Download className="mr-2 h-4 w-4" />
                                         Exportar PDF
@@ -542,10 +561,12 @@ export default function Show({ propuesta }: Props) {
                                         <Plus className="mr-2 h-4 w-4" />
                                         Agregar Follow-up
                                     </Button>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    </div>
+                </div>
 
                     {/* Modal Cambiar Estado */}
                     {showEstadoModal && (
@@ -573,9 +594,9 @@ export default function Show({ propuesta }: Props) {
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-3 p-6 border-t">
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
+                                        <Button
+                                            type="button"
+                                            variant="outline"
                                             onClick={() => setShowEstadoModal(false)}
                                         >
                                             Cancelar
@@ -621,9 +642,9 @@ export default function Show({ propuesta }: Props) {
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-3 p-6 border-t">
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
+                                        <Button
+                                            type="button"
+                                            variant="outline"
                                             onClick={() => setShowFollowupModal(false)}
                                         >
                                             Cancelar
@@ -636,7 +657,7 @@ export default function Show({ propuesta }: Props) {
                             </div>
                         </div>
                     )}
-                </div>
+                    </div>
             </div>
         </AppLayout>
     );

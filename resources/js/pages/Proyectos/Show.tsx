@@ -30,7 +30,8 @@ import {
     User,
     X,
     Target,
-    AlertCircle
+    AlertCircle,
+    Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -227,6 +228,10 @@ export default function Show({ proyecto }: Props) {
         }).format(price);
     };
 
+    const handleExportPDF = () => {
+        window.open(`/proyectos/${proyecto.id}/export-pdf`, '_blank');
+    };
+
     const getEstadoConfig = (estado: string) => {
         const configs = {
             por_empezar: { 
@@ -270,38 +275,65 @@ export default function Show({ proyecto }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Proyecto: ${proyecto.nombre}`} />
             
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50/30 p-8">
-                <div className="mx-auto max-w-6xl space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link href="/proyectos">
-                                <Button variant="outline" size="sm">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Volver
-                                </Button>
-                            </Link>
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{proyecto.nombre}</h1>
-                                <p className="text-gray-600">Proyecto #{proyecto.id}</p>
+            <div className="min-h-screen bg-[#F8F9FA]">
+                {/* Contenido principal */}
+                <div className="mx-auto p-6">
+                    {/* Tarjeta principal que contiene todo */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        {/* Header naranja DENTRO del card */}
+                        <div className="bg-[#FF6B35]">
+                            <div className="mx-auto px-8 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-4">
+                                            <h1 className="text-[28px] font-bold text-white">
+                                                {proyecto.nombre}
+                                            </h1>
+                                            <Badge className={`px-3 py-1 text-sm font-medium border ${estadoConfig.bg} bg-white`}>
+                                                {estadoConfig.emoji} {estadoConfig.label}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-white text-base opacity-90 mt-1">
+                                            Proyecto #{proyecto.id}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center space-x-4">
+                                        {/* Botón Volver */}
+                                        <Link href="/proyectos">
+                                            <Button className="bg-white text-[#FF6B35] hover:bg-gray-50 hover:text-[#FF6B35] font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                                Volver a Proyectos
+                                            </Button>
+                                        </Link>
+
+                                        {/* Botón PDF Mágico */}
+                                        <Button 
+                                            onClick={handleExportPDF}
+                                            className="cursor-pointer rounded-lg bg-purple-600 px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-purple-700"
+                                        >
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            PDF Mágico
+                                        </Button>
+
+                                        {/* Botón Editar */}
+                                        <Link href={`/proyectos/${proyecto.id}/edit`}>
+                                            <Button className="bg-blue-600 text-white hover:bg-blue-700 font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer shadow-sm">
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Editar
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Badge className={`px-4 py-2 text-sm font-medium border ${estadoConfig.bg}`}>
-                                {estadoConfig.emoji} {estadoConfig.label}
-                            </Badge>
-                            <Link href={`/proyectos/${proyecto.id}/edit`}>
-                                <Button variant="outline">
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
+                        
+                        {/* Contenido dentro del card */}
+                        <div className="p-8">
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Main Content */}
+                                <div className="lg:col-span-2 space-y-6">
                             {/* Project Overview */}
                             <Card>
                                 <CardHeader>
@@ -534,8 +566,8 @@ export default function Show({ proyecto }: Props) {
                             </Card>
                         </div>
 
-                        {/* Sidebar */}
-                        <div className="space-y-6">
+                                {/* Sidebar */}
+                                <div className="space-y-6">
                             {/* Status Management */}
                             <Card>
                                 <CardHeader>
@@ -650,7 +682,9 @@ export default function Show({ proyecto }: Props) {
                                         </Button>
                                     </Link>
                                 </CardContent>
-                            </Card>
+                                </Card>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

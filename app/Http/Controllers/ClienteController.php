@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClienteController extends Controller
 {
@@ -173,5 +174,42 @@ class ClienteController extends Controller
         $cliente->delete();
 
         return redirect()->route('clientes.index')->with('message', 'Cliente eliminado exitosamente.');
+    }
+
+    /**
+     * Exportar cliente a PDF con diseño profesional
+     */
+    public function exportarPdf(Cliente $cliente)
+    {
+        // Cargar el cliente con sus relaciones de manera segura
+        $cliente->load(['notas', 'seguimientos', 'propuestas', 'proyectos']);
+        
+        // Asegurar que las relaciones existan como colecciones vacías si son null
+        if (is_null($cliente->notas)) {
+            $cliente->setRelation('notas', collect());
+        }
+        if (is_null($cliente->seguimientos)) {
+            $cliente->setRelation('seguimientos', collect());
+        }
+        if (is_null($cliente->propuestas)) {
+            $cliente->setRelation('propuestas', collect());
+        }
+        if (is_null($cliente->proyectos)) {
+            $cliente->setRelation('proyectos', collect());
+        }
+        
+        // Generar el PDF usando la vista
+        $pdf = Pdf::loadView('clientes.pdf', compact('cliente'))
+                  ->setPaper('a4', 'portrait')
+                  ->setOptions([
+                      'isHtml5ParserEnabled' => true,
+                      'isRemoteEnabled' => true,
+                      'defaultFont' => 'sans-serif'
+                  ]);
+
+        // Nombre del archivo
+        $filename = 'Cliente_' . str_replace([' ', '/'], ['_', '_'], $cliente->nombre . '_' . $cliente->apellido) . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
